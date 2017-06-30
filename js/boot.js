@@ -13,6 +13,9 @@ var bootState = {
         game.load.image('treebutton', 'assets/img/treebutton.png');
         game.load.image('wormbutton', 'assets/img/wormbutton.png');
         game.load.image('x', 'assets/img/x.png');
+        
+        game.load.image('wormsquare', 'assets/img/wormsquare.png');
+        game.load.image('applesquare', 'assets/img/applesquare.png');
 
 //        game.load.image('sunplayer', 'assets/sunplayer.png');
 //        game.load.image('waterplayer', 'assets/waterplayer.png');
