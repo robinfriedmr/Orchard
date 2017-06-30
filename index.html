@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Orchard</title>
+    <link rel="icon" type="image/x-icon" href="http://muse.amusementdevice.com/Robin/Orchard/favicon.ico" /> <!-- Add in Favorites Icon from directory. -->
+    <style type="text/css">
+        @import url(http://fonts.googleapis.com/css?family=Geo);
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .hiddenText {
+            font-family: Geo;
+            visibility: hidden;
+            height: 0;
+        }
+
+    </style>
+
+    <!-- Loading in socket.io-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.2/socket.io.js"></script>
+    
+    <!-- Loading in Phaser framework.-->
+    <script type="text/javascript" src="phaser.min.js"></script>
+    
+    <!-- Loading in GameStates.-->
+    <script type="text/javascript" src="js/boot.js"></script>
+    <script type="text/javascript" src="js/menu.js"></script>
+    <script type="text/javascript" src="js/dirt.js"></script>
+    <script type="text/javascript" src="js/water.js"></script>
+    <script type="text/javascript" src="js/sun.js"></script>
+    <script type="text/javascript" src="js/game.js"></script>
+    
+    <!-- Loading in Client.-->
+    <script type="text/javascript" src="js/client.js"></script>
+</head>
+
+<body>
+    <!-- The hidden text class, as styled above, will not be shown to users accessing the page. -->
+    <p class="hiddenText"> . </p>
+</body>
+
+</html>
