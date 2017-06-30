@@ -1,4 +1,4 @@
-var waterState = {
+var treeState = {
 
     create: function () {
 
@@ -19,12 +19,12 @@ var waterState = {
         // Add background and map (eventually) 
         this.createWorld();
 
-        // Add sprites to the game
-        this.waterplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'waterplayer');
-        this.smdirt = game.add.sprite(game.width / 2 - 55, game.height - 5, 'smdirt');
-
-        //Enable physics on the sprites' bodies.
-        game.physics.arcade.enable(this.waterplayer);
+//        // Add sprites to the game
+//        this.treeplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'treeplayer');
+//        this.smdirt = game.add.sprite(game.width / 2 - 55, game.height - 5, 'smdirt');
+//
+//        //Enable physics on the sprites' bodies.
+//        game.physics.arcade.enable(this.treeplayer);
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -60,11 +60,11 @@ var waterState = {
 
 
         // If the player is dead, do nothing.
-        if (!this.waterplayer.alive) {
-            return;
-        }
-        this.movePlayer();
-    },
+//        if (!this.treeplayer.alive) {
+//            return;
+//        }
+//        this.movePlayer();
+   },
 
     spaceCheck: function () {
         if (this.spacebar.isDown) {
@@ -77,17 +77,21 @@ var waterState = {
 
     createWorld: function () {
 
-        // Create the tilemap
-        this.map = game.add.tilemap('wmap');
-        // Add the tileset to the map
-        this.map.addTilesetImage('tiles');
-        // Create the layer by specifying the name of the Tiled layer
-        this.layer = this.map.createLayer('Tile Layer 1');
+        game.add.image(0, 0, 'treeBG');
 
-        // Set the world size to match the size of the layer
-        this.layer.resizeWorld();
-        // Enable collisions for the XXth tilset element
-        this.map.setCollision();
+        
+//        // Create the tilemap
+//        this.map = game.add.tilemap('wmap');
+//        // Add the tileset to the map
+//        this.map.addTilesetImage('tiles');
+//        // Create the layer by specifying the name of the Tiled layer
+//        this.layer = this.map.createLayer('Tile Layer 1');
+//
+//        // Set the world size to match the size of the layer
+//        this.layer.resizeWorld();
+//        // Enable collisions for the XXth tilset element
+//        this.map.setCollision();
+//    
     },
 
     movePlayer: function () {
@@ -100,17 +104,17 @@ var waterState = {
 
         // Moving conditions
         if (this.cursor.left.isDown || this.wasd.left.isDown || this.moveLeft) {
-            this.waterplayer.body.velocity.x = -200;
+            this.treeplayer.body.velocity.x = -200;
         } else if (this.cursor.right.isDown || this.wasd.right.isDown || this.moveRight) {
-            this.waterplayer.body.velocity.x = 200;
+            this.treeplayer.body.velocity.x = 200;
         } else if (this.cursor.down.isDown || this.wasd.down.isDown || this.moveDown) {
-            this.waterplayer.body.velocity.y = 200;
+            this.treeplayer.body.velocity.y = 200;
         } else if (this.cursor.up.isDown || this.wasd.up.isDown || this.moveUp) {
-            this.waterplayer.body.velocity.y = -200;
+            this.treeplayer.body.velocity.y = -200;
         } else {
             // Stop the player
-            this.waterplayer.body.velocity.x = 0;
-            this.waterplayer.body.velocity.y = 0;
+            this.treeplayer.body.velocity.x = 0;
+            this.treeplayer.body.velocity.y = 0;
             //this.player.animations.stop(); //Cease any animation
             //this.player.frame = 0; // Change frame (to stand still)
         }
@@ -191,7 +195,7 @@ var waterState = {
     
     render: function() {
         // Sprite debug info, including location information. 
-        game.debug.spriteCoords(this.waterplayer, 50, game.height - 100);
+        game.debug.spriteCoords(this.treeplayer, 50, game.height - 100);
     },
 
 };

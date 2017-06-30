@@ -5,37 +5,37 @@
 var bootState = {
     preload: function () {
         // Load images
-        game.load.image('sunBG', 'assets/sun.png');
-        game.load.image('waterBG', 'assets/water.png');
-        game.load.image('dirtBG', 'assets/dirt.png');
+        game.load.image('birdBG', 'assets/img/birdBG.png');
+        game.load.image('treeBG', 'assets/img/treeBG.png');
+        game.load.image('wormBG', 'assets/img/wormBG.png');
         
-        game.load.image('sunbutton', 'assets/sunbutton.png');
-        game.load.image('waterbutton', 'assets/waterbutton.png');
-        game.load.image('dirtbutton', 'assets/dirtbutton.png');
-        game.load.image('x', 'assets/x.png');
+        game.load.image('birdbutton', 'assets/img/birdbutton.png');
+        game.load.image('treebutton', 'assets/img/treebutton.png');
+        game.load.image('wormbutton', 'assets/img/wormbutton.png');
+        game.load.image('x', 'assets/img/x.png');
 
-        game.load.image('sunplayer', 'assets/sunplayer.png');
-        game.load.image('waterplayer', 'assets/waterplayer.png');
-        game.load.image('smwater', 'assets/smwater.png');
-        game.load.image('dirtplayer', 'assets/dirtplayer.png');
-        game.load.image('smdirt', 'assets/smdirt.png');
+//        game.load.image('sunplayer', 'assets/sunplayer.png');
+//        game.load.image('waterplayer', 'assets/waterplayer.png');
+//        game.load.image('smwater', 'assets/smwater.png');
+//        game.load.image('dirtplayer', 'assets/dirtplayer.png');
+//        game.load.image('smdirt', 'assets/smdirt.png');
+//
+//        game.load.image('nutrient', 'assets/nutrient.png');
+//        game.load.image('goal', 'assets/goal.png');
 
-        game.load.image('nutrient', 'assets/nutrient.png');
-        game.load.image('goal', 'assets/goal.png');
 
-
-        game.load.image('upButton', 'assets/upButton.png');
-        game.load.image('rightButton', 'assets/rightButton.png');
-        game.load.image('leftButton', 'assets/leftButton.png');
+//        game.load.image('upButton', 'assets/upButton.png');
+//        game.load.image('rightButton', 'assets/rightButton.png');
+//        game.load.image('leftButton', 'assets/leftButton.png');
 
         //Tiles is universal. Dmap is for the dirt level.
-        game.load.image('tiles', 'assets/tiles.png');
-        game.load.tilemap('dmap', 'assets/dmap.json', null, Phaser.Tilemap.TILED_JSON);
-        game.load.tilemap('wmap', 'assets/wmap.json', null, Phaser.Tilemap.TILED_JSON);
+//        game.load.image('tiles', 'assets/tiles.png');
+//        game.load.tilemap('dmap', 'assets/dmap.json', null, Phaser.Tilemap.TILED_JSON);
+//        game.load.tilemap('wmap', 'assets/wmap.json', null, Phaser.Tilemap.TILED_JSON);
 
     },
+    
     create: function () {
-
         // Set some game settings
         game.stage.backgroundColor = '#4ECF3E';
         game.renderer.renderSession.roundPixels = true;
@@ -59,6 +59,4 @@ var bootState = {
         // Start the menu state
         game.state.start('menu');
     },
-
-    //We only need the boot to run once, so there is no update function.
 };

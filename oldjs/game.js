@@ -15,9 +15,9 @@ var game = new Phaser.Game(
 game.state.add('boot', bootState);
 game.state.add('menu', menuState);
 
-game.state.add('dirt', dirtState);
-game.state.add('water', waterState);
-game.state.add('sun', sunState);
+game.state.add('worm', wormState);
+game.state.add('tree', treeState);
+game.state.add('bird', birdState);
 
 // Start the 'boot' state
 game.state.start('boot');

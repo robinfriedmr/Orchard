@@ -1,4 +1,4 @@
-var sunState = {
+var birdState = {
 
     create: function () {
 
@@ -20,10 +20,10 @@ var sunState = {
         this.createWorld();
 
         // Add sprites to the game
-        this.sunplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'sunplayer');
-
-        //Enable physics on the sprites' bodies.
-        game.physics.arcade.enable(this.sunplayer);
+//        this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'birdplayer');
+//
+//        //Enable physics on the sprites' bodies.
+//        game.physics.arcade.enable(this.birdplayer);
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -58,11 +58,11 @@ var sunState = {
         //        game.physics.arcade.overlap(this.nutrient, this.goal, this.goalAchieved, null, this);
 
 
-        // If the player is dead, do nothing.
-        if (!this.sunplayer.alive) {
-            return;
-        }
-        this.movePlayer();
+//        // If the player is dead, do nothing.
+//        if (!this.birdplayer.alive) {
+//            return;
+//        }
+//        this.movePlayer();
     },
 
     spaceCheck: function () {
@@ -87,7 +87,7 @@ var sunState = {
         //        this.layer.resizeWorld();
         //        // Enable collisions for the first tilset element (the blue wall)
         //        this.map.setCollision([3, 4]);
-        game.add.image(0, 0, 'sunBG');
+        game.add.image(0, 0, 'birdBG');
     },
 
     movePlayer: function () {
@@ -100,17 +100,17 @@ var sunState = {
 
         // Moving conditions
         if (this.cursor.left.isDown || this.wasd.left.isDown || this.moveLeft) {
-            this.sunplayer.body.velocity.x = -200;
+            this.birdplayer.body.velocity.x = -200;
         } else if (this.cursor.right.isDown || this.wasd.right.isDown || this.moveRight) {
-            this.sunplayer.body.velocity.x = 200;
+            this.birdplayer.body.velocity.x = 200;
         } else if (this.cursor.down.isDown || this.wasd.down.isDown || this.moveDown) {
-            this.sunplayer.body.velocity.y = 200;
+            this.birdplayer.body.velocity.y = 200;
         } else if (this.cursor.up.isDown || this.wasd.up.isDown || this.moveUp) {
-            this.sunplayer.body.velocity.y = -200;
+            this.birdplayer.body.velocity.y = -200;
         } else {
             // Stop the player
-            this.sunplayer.body.velocity.x = 0;
-            this.sunplayer.body.velocity.y = 0;
+            this.birdplayer.body.velocity.x = 0;
+            this.birdplayer.body.velocity.y = 0;
             //this.player.animations.stop(); //Cease any animation
             //this.player.frame = 0; // Change frame (to stand still)
         }
