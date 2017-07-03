@@ -2,8 +2,8 @@
 
 // Initialize Phaser
 var game = new Phaser.Game(
-    120 * 5,
-    70 * 5,
+    40 * 15,
+    23 * 15,
 );
 
 // Define our global variable

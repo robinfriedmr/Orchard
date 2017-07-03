@@ -19,12 +19,12 @@ var treeState = {
         // Add background and map (eventually) 
         this.createWorld();
 
-//        // Add sprites to the game
-//        this.treeplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'treeplayer');
-//        this.smdirt = game.add.sprite(game.width / 2 - 55, game.height - 5, 'smdirt');
-//
-//        //Enable physics on the sprites' bodies.
-//        game.physics.arcade.enable(this.treeplayer);
+        // Add sprites to the game
+        this.growingapple = game.add.sprite(game.width / 2, game.height / 2, 'growingapple');
+        this.growingapple.anchor.setTo(0.5, 0.5);
+        
+        //Enable physics on the sprites' bodies.
+        //        game.physics.arcade.enable(this.treeplayer);
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -46,11 +46,6 @@ var treeState = {
             this.orientationChange();
         }
 
-        // *** This is an attempt to change the camera's view. ***
-        //Phaser.Camera = function (game, 0, 0, 12*25, 7*25) { }  
-        //this.view = new Phaser.Rectangle(0, 0, 12*25, 7*25);
-        //game.camera.width = 12 * 25;
-        //game.camera.height = 7 * 25;
     },
 
     update: function () {
@@ -58,13 +53,12 @@ var treeState = {
         //        game.physics.arcade.collide(this.nutrient, this.player, this.pullNutrient, this.spaceCheck, this);
         //        game.physics.arcade.overlap(this.nutrient, this.goal, this.goalAchieved, null, this);
 
-
-        // If the player is dead, do nothing.
-//        if (!this.treeplayer.alive) {
-//            return;
-//        }
-//        this.movePlayer();
-   },
+        var period = game.time.now * 0.001;
+        var radius = 60;
+        this.growingapple.x = game.world.centerX + Math.cos(period) * radius;
+        this.growingapple.y = game.world.centerY + Math.sin(period) * radius;
+    
+    },
 
     spaceCheck: function () {
         if (this.spacebar.isDown) {
@@ -79,55 +73,49 @@ var treeState = {
 
         game.add.image(0, 0, 'treeBG');
 
-        
-//        // Create the tilemap
-//        this.map = game.add.tilemap('wmap');
-//        // Add the tileset to the map
-//        this.map.addTilesetImage('tiles');
-//        // Create the layer by specifying the name of the Tiled layer
-//        this.layer = this.map.createLayer('Tile Layer 1');
-//
-//        // Set the world size to match the size of the layer
-//        this.layer.resizeWorld();
-//        // Enable collisions for the XXth tilset element
-//        this.map.setCollision();
-//    
+
+        //        // Create the tilemap
+        //        this.map = game.add.tilemap('wmap');
+        //        // Add the tileset to the map
+        //        this.map.addTilesetImage('tiles');
+        //        // Create the layer by specifying the name of the Tiled layer
+        //        this.layer = this.map.createLayer('Tile Layer 1');
+        //
+        //        // Set the world size to match the size of the layer
+        //        this.layer.resizeWorld();
+        //        // Enable collisions for the XXth tilset element
+        //        this.map.setCollision();
+        //    
     },
 
-    movePlayer: function () {
-        // If 0 fingers are touching the screen
-        if (game.input.totalActivePointers == 0) {
-            // Make sure the player is not moving
-            this.moveLeft = false;
-            this.moveRight = false;
-        }
-
-        // Moving conditions
-        if (this.cursor.left.isDown || this.wasd.left.isDown || this.moveLeft) {
-            this.treeplayer.body.velocity.x = -200;
-        } else if (this.cursor.right.isDown || this.wasd.right.isDown || this.moveRight) {
-            this.treeplayer.body.velocity.x = 200;
-        } else if (this.cursor.down.isDown || this.wasd.down.isDown || this.moveDown) {
-            this.treeplayer.body.velocity.y = 200;
-        } else if (this.cursor.up.isDown || this.wasd.up.isDown || this.moveUp) {
-            this.treeplayer.body.velocity.y = -200;
-        } else {
-            // Stop the player
-            this.treeplayer.body.velocity.x = 0;
-            this.treeplayer.body.velocity.y = 0;
-            //this.player.animations.stop(); //Cease any animation
-            //this.player.frame = 0; // Change frame (to stand still)
-        }
-    },
+    //    movePlayer: function () {
+    //        // If 0 fingers are touching the screen
+    //        if (game.input.totalActivePointers == 0) {
+    //            // Make sure the player is not moving
+    //            this.moveLeft = false;
+    //            this.moveRight = false;
+    //        }
+    //
+    //        // Moving conditions
+    //        if (this.cursor.left.isDown || this.wasd.left.isDown || this.moveLeft) {
+    //            this.treeplayer.body.velocity.x = -200;
+    //        } else if (this.cursor.right.isDown || this.wasd.right.isDown || this.moveRight) {
+    //            this.treeplayer.body.velocity.x = 200;
+    //        } else if (this.cursor.down.isDown || this.wasd.down.isDown || this.moveDown) {
+    //            this.treeplayer.body.velocity.y = 200;
+    //        } else if (this.cursor.up.isDown || this.wasd.up.isDown || this.moveUp) {
+    //            this.treeplayer.body.velocity.y = -200;
+    //        } else {
+    //            // Stop the player
+    //            this.treeplayer.body.velocity.x = 0;
+    //            this.treeplayer.body.velocity.y = 0;
+    //            //this.player.animations.stop(); //Cease any animation
+    //            //this.player.frame = 0; // Change frame (to stand still)
+    //        }
+    //    },
 
     startMenu: function () {
         game.state.start('menu');
-    },
-    
-    receiveDirtCoords: function (xloc, yloc) {
-        console.log("Dirt coordinate points are " + xloc + ", " + yloc);
-        this.smdirt.x = xloc;
-        this.smdirt.y = yloc;
     },
 
     // ****************** MOBILE FUNCTIONS *****************
@@ -192,10 +180,4 @@ var treeState = {
             this.rotateLabel.text = '';
         }
     },
-    
-    render: function() {
-        // Sprite debug info, including location information. 
-        game.debug.spriteCoords(this.treeplayer, 50, game.height - 100);
-    },
-
 };

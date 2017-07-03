@@ -4,7 +4,8 @@
 
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
-var worm, apple, squareSize, speed,
+var worm, apple, nutrient, 
+    squareSize, speed, collisionCounter,
     updateDelay, direction, new_direction;
 
 var wormState = {
@@ -30,8 +31,10 @@ var wormState = {
 
         worm = []; // This will work as a stack, containing the parts of our worm
         apple = {}; // An object for the apple;
+        nutrient = {}; // An object for the nutrient***.
         squareSize = 15; // The length of a side of the squares. Our image is 15x15 pixels.
         speed = 0; // Game speed.
+        collisionCounter = 0; // Number of times collided with self or wall.
         updateDelay = 0; // A variable for control over update rates.
         direction = 'right'; // The direction of our worm.
         new_direction = null; // A buffer to store the new direction into.
@@ -44,17 +47,6 @@ var wormState = {
 
         // Genereate the first apple.
         this.generateApple();
-
-        //        this.goal = game.add.sprite(game.width / 2 + 50, 100, 'goal'); // To be replaced with map tiles.
-        //
-        //        this.wormplayer = game.add.sprite(game.width / 2 - 190, game.height / 2 + 10, 'wormplayer');
-        //        this.nutrient = game.add.sprite(game.width / 2 + 200, game.height / 2, 'nutrient');
-        //
-        //        //Enable physics on the sprites' bodies.
-        //        game.physics.arcade.enable([this.wormplayer, this.nutrient, this.goal]);
-        //
-        //        this.nutrient.body.moves = true;
-        //        this.goal.body.moves = false;
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -92,16 +84,23 @@ var wormState = {
             new_direction = 'down';
         }
 
+        collisionCounter = Math.min(10, collisionCounter); // Set the collision counter to at most 10.
+        speed = Math.min(10, collisionCounter); // Modulate speed based on the collision counter.
+
         // Increase a counter on every update call.
         updateDelay++;
-        if (updateDelay % (10) == 0) {
+        if (updateDelay % (10 + speed) == 0) {
 
             // Worm movement
             var firstCell = worm[worm.length - 1],
                 lastCell = worm.shift(),
                 oldLastCellx = lastCell.x,
                 oldLastCelly = lastCell.y;
-
+        
+            // Check for collision with wall. Parameter is the head of the worm.
+            // *** *** *** TRYING TO GET THIS TO ACTUALLY MAKE THE WORM CHANGE DIRECTION. ** * * *
+            this.wallCollision(firstCell);
+            
             // If a new direction has been chosen from the keyboard, make it the direction of the worm now.
             if (new_direction) {
                 direction = new_direction;
@@ -131,8 +130,7 @@ var wormState = {
             // Check for collision with self. Parameter is the head of the worm.
             this.selfCollision(firstCell);
 
-            // Check with collision with wall. Parameter is the head of the worm.
-            this.wallCollision(firstCell);
+            console.log("X is " + firstCell.x + " Y is " + firstCell.y);
         }
     },
 
@@ -159,29 +157,48 @@ var wormState = {
         // Check if any part of the worm is overlapping the apple.
         for (var i = 0; i < worm.length; i++) {
             if (worm[i].x == apple.x && worm[i].y == apple.y) {
+                // Put in a nutrient where the apple is.
+                game.add.sprite(apple.x, apple.y, 'nutrient');
                 // Destroy the old apple.
                 apple.destroy();
                 // Make a new one.
                 this.generateApple();
+                
+                if (collisionCounter > 0) {
+                    collisionCounter--;
+                    console.log(collisionCounter);
+                }
             }
         }
     },
 
     selfCollision: function (head) {
-        console.log(head.x);
-
         // Check if the head of the worm overlaps with any part of the worm.
         for (var i = 0; i < worm.length - 1; i++) {
             if (head.x == worm[i].x && head.y == worm[i].y) {
-                game.state.start('menu');
+                collisionCounter++;
+                console.log(collisionCounter);
+
             }
         }
     },
 
     wallCollision: function (head) {
-        if (head.x >= 600 || head.x < 0 || head.y >= 450 || head.y < 0) {
-            // If the head is not in, we've hit a wall.
-            game.state.start('menu');
+        if (head.x >= (game.width - squareSize) || head.x < 0 || head.y >= (game.height - squareSize) || head.y < 0) {
+            // If the head is not in, we've hit a wall. Add to counter.
+            collisionCounter++;
+            console.log(collisionCounter);
+            
+            if (direction == 'right') {
+                new_direction == 'up';
+            } else if (direction == 'left') {
+                new_direction == 'down';
+            } else if (direction == 'up') {
+                new_direction == 'left';
+            } else if (direction == 'down') {
+                new_direction == 'right';
+            }
+            
         }
 
     },
