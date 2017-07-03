@@ -1,3 +1,6 @@
+var nutrientNo = 0; // Create global variable 'nutrientNo' to represent the number of nutrient ingredients present.
+console.log("nutrientNo is starting at " + nutrientNo);
+    
 var treeState = {
 
     create: function () {
@@ -8,23 +11,30 @@ var treeState = {
 
         // Arrow and WASD keys
         this.cursor = game.input.keyboard.createCursorKeys();
-        this.wasd = {
-            up: game.input.keyboard.addKey(Phaser.Keyboard.W),
-            down: game.input.keyboard.addKey(Phaser.Keyboard.S),
-            left: game.input.keyboard.addKey(Phaser.Keyboard.A),
-            right: game.input.keyboard.addKey(Phaser.Keyboard.D)
+        this.debugKeys = {
+            nutBut: game.input.keyboard.addKey(Phaser.Keyboard.Q),
+            b: game.input.keyboard.addKey(Phaser.Keyboard.W),
+            eraseBut: game.input.keyboard.addKey(Phaser.Keyboard.E),
+            d: game.input.keyboard.addKey(Phaser.Keyboard.R),
         };
         this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         // Add background and map (eventually) 
         this.createWorld();
 
+        // Add icons on UI to indicate ingredients
+        this.nImage = game.add.image(135, 135, 'nutrient');
+        this.CImage = game.add.image(135, 185, 'CO2');
+        this.wImage = game.add.image(135, 235, 'water');
+        
         // Add sprites to the game
         this.growingapple = game.add.sprite(game.width / 2, game.height / 2, 'growingapple');
         this.growingapple.anchor.setTo(0.5, 0.5);
-        
+
         //Enable physics on the sprites' bodies.
-        //        game.physics.arcade.enable(this.treeplayer);
+        game.physics.arcade.enable([this.growingapple]);
+        this.growingapple.body.setCircle(37.5); // set growingapple's body to a circle with a 37.5 px radius
+
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -51,13 +61,35 @@ var treeState = {
     update: function () {
         // Collisions should always go at the top of the Update function.
         //        game.physics.arcade.collide(this.nutrient, this.player, this.pullNutrient, this.spaceCheck, this);
-        //        game.physics.arcade.overlap(this.nutrient, this.goal, this.goalAchieved, null, this);
-
+        game.physics.arcade.overlap(this.nutrientIng, this.growingapple, this.addNutrientIng, null, this);
+        
         var period = game.time.now * 0.001;
         var radius = 60;
         this.growingapple.x = game.world.centerX + Math.cos(period) * radius;
         this.growingapple.y = game.world.centerY + Math.sin(period) * radius;
+    },
+
+    nutrientSupply: function () {
+        nutrientNo++;
+        console.log("nutrientNo is " + nutrientNo);
     
+        // Initialize nutrientIng.
+        this.nutrientIng = game.add.sprite(150, 150, 'nutrient'); // Add the sprite for the ingredient 'nutrient'
+        this.nutrientIng.anchor.setTo(0.5, 0.5); // The coordinates are for the center of the sprite.
+        
+        // Give sprite a body and ability to be dragged/touched.
+        game.physics.arcade.enable(this.nutrientIng);
+        this.nutrientIng.inputEnabled = true; // Input Enable the sprite
+        this.nutrientIng.input.enableDrag(true); // Allow dragging - 'true' parameter makes the sprite snap to the center
+    },
+
+    addNutrientIng: function (nutrientIng, growingapple) {
+        nutrientIng.destroy();
+        snappedIng = growingapple.addChild(game.make.sprite(0, -20, 'nutrient'));
+        snappedIng.anchor.setTo(0.5, 0.5);
+        
+        nutrientNo--;
+        console.log("An overlap has occurred. NutrientNo is " + nutrientNo);
     },
 
     spaceCheck: function () {
@@ -70,9 +102,7 @@ var treeState = {
     },
 
     createWorld: function () {
-
         game.add.image(0, 0, 'treeBG');
-
 
         //        // Create the tilemap
         //        this.map = game.add.tilemap('wmap');

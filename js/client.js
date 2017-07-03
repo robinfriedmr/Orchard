@@ -20,10 +20,9 @@ Client.askBird = function () {
     Client.socket.emit('birdRequest');
 };
 
-//Client.sendDirtCoords = function (xresult, yresult) {
-//    Client.socket.emit('sendDirtCoords', xresult, yresult);  
-//    console.log("Sending " + xresult + " and " + yresult + " to the server.");
-//};
+Client.sendNutrient = function () {
+    Client.socket.emit('sendNutrient');  
+};
 
 //************FROM SERVER****************
 Client.socket.on('you', function (data) {
@@ -38,11 +37,9 @@ Client.socket.on('refreshID', function (data) {
     menuState.giveIDs(data.wormPD, data.treePD, data.birdPD); 
 });
 
-//Client.socket.on('receiveDirtCoords', function (x, y) {
-//    waterState.receiveDirtCoords(x, y);
-//    console.log("Dirt Coordinates have been received by the client.");
-//    console.log(x + " is the x value.");
-//});
+Client.socket.on('receiveNutrient', function () {
+    treeState.nutrientSupply(); 
+});
 
 // ~~`` Start Server Assigning States ``~~
 Client.socket.on('wormGo', function (data) {

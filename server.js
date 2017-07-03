@@ -62,28 +62,22 @@ io.on('connection', function (socket) {
         socket.on('wormRequest', function () {
             // The player who requested Worm is given their own ID.
             socket.emit('wormGo', socket.player.id);
-
             // Everyone else is not allowed to choose Worm.
             httpServer.currentData.wormPD = socket.player.id; // update currentData object on server
             socket.broadcast.emit('wormNo', httpServer.currentData.wormPD); // emit the new value of wormPD
             console.log(httpServer.currentData.wormPD + " is the ID value of wormPD.");
-
         });
-
         socket.on('treeRequest', function () {
             // The player who requested Tree is given their own ID.
-            socket.emit('treeGo', socket.player.id);
-            
+            socket.emit('treeGo', socket.player.id);      
             // Everyone else is not allowed to choose Tree.
             httpServer.currentData.treePD = socket.player.id;
             socket.broadcast.emit('treeNo', httpServer.currentData.treePD);
             console.log(httpServer.currentData.treePD + " is the Tree player.")
         });
-
         socket.on('birdRequest', function () {
             // The player who requested Bird is given their own ID.
-            socket.emit('birdGo', socket.player.id);
-            
+            socket.emit('birdGo', socket.player.id);   
             // Everyone else is not allowed to choose Bird.
             httpServer.currentData.birdPD = socket.player.id;
             socket.broadcast.emit('birdNo', httpServer.currentData.birdPD);
@@ -101,10 +95,10 @@ io.on('connection', function (socket) {
             console.log("Not all roles are undefined, but no role has been given a valid player ID.");
         }
         
-//        socket.on('sendwormCoords', function(x, y) {
-//            console.log("wormplayer is " + x + ", " + y + ".")
-//            socket.broadcast.emit('receivewormCoords', x, y);
-//        })
+        socket.on('sendNutrient', function() {
+            console.log("server has wormplayer's nutrient")
+            socket.broadcast.emit('receiveNutrient');
+        });
 
     });
 });
