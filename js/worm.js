@@ -87,26 +87,28 @@ var wormState = {
         collisionCounter = Math.min(10, collisionCounter); // Set the collision counter to at most 10.
         speed = Math.min(10, collisionCounter); // Modulate speed based on the collision counter.
 
-        // Increase a counter on every update call.
+        // Run this code every 10 (to 20) runs through "update"
         updateDelay++;
         if (updateDelay % (10 + speed) == 0) {
-
             // Worm movement
             var firstCell = worm[worm.length - 1],
                 lastCell = worm.shift(),
                 oldLastCellx = lastCell.x,
                 oldLastCelly = lastCell.y;
-        
-            // Check for collision with wall. Parameter is the head of the worm.
-            // *** *** *** TRYING TO GET THIS TO ACTUALLY MAKE THE WORM CHANGE DIRECTION. ** * * *
-            this.wallCollision(firstCell);
             
+            // Check for collision with wall. Parameter is the head of the worm. ***TRYING TO GET THIS TO ACTUALLY MAKE THE WORM CHANGE DIRECTION. ***
+            this.wallCollision(firstCell);
+
+            // Check for apple collision.
+            this.appleCollision();
+            // Check for collision with self. Parameter is the head of the worm.
+            this.selfCollision(firstCell);
+
             // If a new direction has been chosen from the keyboard, make it the direction of the worm now.
             if (new_direction) {
                 direction = new_direction;
                 new_direction = null;
             }
-
             // Change the last cell's coordinates relative to the head of the worm, according to the direction.
             if (direction == 'right') {
                 lastCell.x = firstCell.x + squareSize;
@@ -123,13 +125,7 @@ var wormState = {
             }
             worm.push(lastCell); // Place the last cell in the front of the stack.
             firstCell = lastCell; // Mark it the first cell.
-
-            // Check for apple collision.
-            this.appleCollision();
-
-            // Check for collision with self. Parameter is the head of the worm.
-            this.selfCollision(firstCell);
-
+            
             console.log("X is " + firstCell.x + " Y is " + firstCell.y);
         }
     },
@@ -157,8 +153,12 @@ var wormState = {
         // Check if any part of the worm is overlapping the apple.
         for (var i = 0; i < worm.length; i++) {
             if (worm[i].x == apple.x && worm[i].y == apple.y) {
+                
                 // Put in a nutrient where the apple is.
                 game.add.sprite(apple.x, apple.y, 'nutrient');
+                // Send a nutrient to the server.
+                Client.sendNutrient();
+                
                 // Destroy the old apple.
                 apple.destroy();
                 // Make a new one.
@@ -184,7 +184,7 @@ var wormState = {
     },
 
     wallCollision: function (head) {
-        if (head.x >= (game.width - squareSize) || head.x < 0 || head.y >= (game.height - squareSize) || head.y < 0) {
+        if (head.x >= (game.width) || head.x < 0 || head.y >= (game.height) || head.y < 0) {
             // If the head is not in, we've hit a wall. Add to counter.
             collisionCounter++;
             console.log(collisionCounter);
@@ -249,25 +249,7 @@ var wormState = {
     //        }
     //    },
 
-    //    checkLoc: function () { // If the wormplayer is within a certain bounds, send a coordinate mapped for the water state, to display the wormplayer's approximate location in the water state.
-    //        if (this.wormplayer.x >= 30 && this.wormplayer.x <= 545 && this.wormplayer.y <= 240) {
-    //            xresult = Math.round(this.mapRange([30, 545], [233, 327], this.wormplayer.x));
-    //            yresult = Math.round(this.mapRange([0, 240], [325, 350], this.wormplayer.y));
-    //            //            Client.sendDirtCoords(xresult, yresult);
-    //        }
-    //    },
-    //
-    //    mapRange: function (from, to, s) {
-    //        return to[0] + (s - from[0]) * (to[1] - to[0]) / (from[1] - from[0]);
-    //    },
-    //
-    //    //    sendRange: function (result) {
-    //    //        var range = 287.5;
-    //    //
-    //    //        console.log(result);
-    //    //    },
-    //
-    //    startMenu: function () {
+  //    startMenu: function () {
     //        game.state.start('menu');
     //    },
 
