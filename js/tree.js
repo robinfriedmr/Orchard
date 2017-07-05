@@ -5,7 +5,7 @@ var waterNo = 0; // Number of water ingredients present.
 
 var wasCalled = false; // for debug.
 
-const RADIUS = 60; // Radius of circular motion.
+const RADIUS = 80; // Radius of circular motion.
 const SPEED = 0.0005 // Speed of the circular motion.
 
 var treeState = {
@@ -20,9 +20,9 @@ var treeState = {
         this.cursor = game.input.keyboard.createCursorKeys();
         this.debugKeys = {
             nutBut: game.input.keyboard.addKey(Phaser.Keyboard.Q),
-            wasCalledToggle: game.input.keyboard.addKey(Phaser.Keyboard.W),
-            e: game.input.keyboard.addKey(Phaser.Keyboard.E),
-            r: game.input.keyboard.addKey(Phaser.Keyboard.R),
+            CO2But: game.input.keyboard.addKey(Phaser.Keyboard.W),
+            watBut: game.input.keyboard.addKey(Phaser.Keyboard.E),
+            wasCalledToggle: game.input.keyboard.addKey(Phaser.Keyboard.R), // R for reset
         };
         this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
@@ -35,7 +35,11 @@ var treeState = {
         this.wImage = game.add.image(40, 285, 'water');
 
         // Add numbers to show the number of ingredients in each stack.
-        var textStyle_Nutrient = {font: "bold 18px sans-serif", fill: "#fff", align: "center"};
+        var textStyle_Nutrient = {
+            font: "bold 18px sans-serif",
+            fill: "#fff",
+            align: "center"
+        };
         nutrientNoText = game.add.text(90, 185, nutrientNo.toString(), textStyle_Nutrient);
         CO2NoText = game.add.text(90, 235, CO2No.toString(), textStyle_Nutrient);
         waterNoText = game.add.text(90, 285, waterNo.toString(), textStyle_Nutrient);
@@ -74,17 +78,40 @@ var treeState = {
     update: function () {
         // Collisions should always go at the top of the Update function.
         game.physics.arcade.overlap(this.nutrientIng, this.growingapple, this.addNutrientIng, null, this);
+        game.physics.arcade.overlap(this.CO2Ing, this.growingapple, this.addCO2Ing, null, this);
+        game.physics.arcade.overlap(this.waterIng, this.growingapple, this.addWaterIng, null, this);
 
-        var period = game.time.now * SPEED; // *** I'd like to get a red tint related to the period eventually.
-        this.growingapple.x = game.world.centerX + Math.cos(period) * RADIUS;
-        this.growingapple.y = game.world.centerY + Math.sin(period) * RADIUS;
+        this.growingappleProperties(); // Run the math that places the apple and decides whether it's shown.
 
         this.debugNutrient(); // Call in a nutrient when conditions are met.
+        this.debugCO2(); // Call in a CO2 particle.
+        this.debugWater(); // Call in a water particle.
 
         if (this.debugKeys.wasCalledToggle.isDown && wasCalled == true) {
             wasCalled = false; // Toggle wasCalled back to false.
             console.log("wasCalled is now " + wasCalled);
         }
+    },
+
+    growingappleProperties: function () {
+        var period = game.time.now * SPEED;
+        this.growingapple.x = game.world.centerX + Math.cos(period) * (RADIUS + 40);
+        this.growingapple.y = game.world.centerY + Math.sin(period) * RADIUS;
+
+        if (period % Math.PI < 0.01) {
+            game.camera.flash(0xffffff, 500);
+        }
+
+        if (Math.sin(period) < 0) {
+            this.growingapple.visible = true;
+        } else {
+            this.growingapple.visible = false;
+            this.clearApple();
+        }
+    },
+
+    clearApple: function () {
+        this.growingapple.children = [];
     },
 
     debugNutrient: function () {
@@ -97,17 +124,51 @@ var treeState = {
     },
 
     nutrientSupply: function () {
-
         if (nutrientNo == 0) {
             this.buildNutrient(); // Build a new *sprite* only if there aren't any already existing in the stack.
         }
-
         nutrientNo++;
         nutrientNoText.text = nutrientNo.toString();
         console.log("nutrientNo is " + nutrientNo);
-
     },
 
+    debugCO2: function () {
+        if (!wasCalled && this.debugKeys.CO2But.isDown) {
+            wasCalled = true;
+            console.log("wasCalled is now " + wasCalled);
+
+            this.CO2Supply();
+        }
+    },
+
+    CO2Supply: function () {
+        if (CO2No == 0) {
+            this.buildCO2(); // Build a new *sprite* only if there aren't any already existing in the stack.
+        }
+        CO2No++;
+        CO2NoText.text = CO2No.toString();
+        console.log("CO2No is " + CO2No);
+    },
+
+    debugWater: function () {
+        if (!wasCalled && this.debugKeys.watBut.isDown) {
+            wasCalled = true;
+            console.log("wasCalled is now " + wasCalled);
+
+            this.waterSupply();
+        }
+    },
+
+    waterSupply: function () {
+        if (waterNo == 0) {
+            this.buildWater();
+        }
+        waterNo++;
+        waterNoText.text = waterNo.toString();
+        console.log("waterNo is " + waterNo);
+    },
+
+    // NEW SPRITE CREATION BEGIN *** *** ***
     buildNutrient: function () {
         // Initialize nutrientIng.
         this.nutrientIng = game.add.sprite(150, 150, 'nutrient'); // Add the sprite for the ingredient 'nutrient'
@@ -117,6 +178,26 @@ var treeState = {
         this.nutrientIng.input.enableDrag(true); // Allow dragging - 'true' parameter makes the sprite snap to the center.
     },
 
+    buildCO2: function () {
+        // Initialize CO2Ing.
+        this.CO2Ing = game.add.sprite(150, 150, 'CO2');
+        this.CO2Ing.anchor.setTo(0.5, 0.5);
+        game.physics.arcade.enable(this.CO2Ing);
+        this.CO2Ing.inputEnabled = true;
+        this.CO2Ing.input.enableDrag(true);
+    },
+
+    buildWater: function () {
+        // Initialize waterIng.
+        this.waterIng = game.add.sprite(150, 150, 'water');
+        this.waterIng.anchor.setTo(0.5, 0.5);
+        game.physics.arcade.enable(this.waterIng);
+        this.waterIng.inputEnabled = true;
+        this.waterIng.input.enableDrag(true);
+    },
+    // NEW SPRITE CREATION END *** *** ***
+
+    // ADD INGREDIENT TO GROWING APPLE BEGIN *** *** ***
     addNutrientIng: function (nutrientIng, growingapple) {
         nutrientIng.destroy(); // Destroy dragged sprite. 
         if (nutrientNo > 1) { // If there was more than one nutrient in the stack,
@@ -133,14 +214,34 @@ var treeState = {
         console.log("An overlap has occurred. NutrientNo is " + nutrientNo);
     },
 
-    spaceCheck: function () {
-        if (this.spacebar.isDown) {
-            return true;
-            console.log("Spacebar down is true.")
-        } else {
-            return false;
+    addCO2Ing: function (CO2Ing, growingapple) {
+        CO2Ing.destroy();
+        if (CO2No > 1) {
+            this.buildNutrient();
         }
+
+        snappedCIng = growingapple.addChild(game.make.sprite(-17, 8, 'CO2'));
+        snappedCIng.anchor.setTo(0.5, 0.5);
+
+        CO2No--;
+        CO2NoText.text = CO2No.toString();
+        console.log("An overlap has occurred. CO2No is " + CO2No);
     },
+
+    addWaterIng: function (waterIng, growingapple) {
+        waterIng.destroy();
+        if (waterNo > 1) {
+            this.buildWater();
+        }
+
+        snappedWIng = growingapple.addChild(game.make.sprite(16, 8, 'water'));
+        snappedWIng.anchor.setTo(0.5, 0.5);
+
+        waterNo--;
+        waterNoText.text = waterNo.toString();
+        console.log("An overlap has occurred. waterNo is " + waterNo);
+    },
+    // ADD INGREDIENT TO GROWING APPLE END *** *** ***
 
     createWorld: function () {
         game.add.image(0, 0, 'treeBG');
@@ -158,32 +259,6 @@ var treeState = {
         //        this.map.setCollision();
         //    
     },
-
-    //    movePlayer: function () {
-    //        // If 0 fingers are touching the screen
-    //        if (game.input.totalActivePointers == 0) {
-    //            // Make sure the player is not moving
-    //            this.moveLeft = false;
-    //            this.moveRight = false;
-    //        }
-    //
-    //        // Moving conditions
-    //        if (this.cursor.left.isDown || this.wasd.left.isDown || this.moveLeft) {
-    //            this.treeplayer.body.velocity.x = -200;
-    //        } else if (this.cursor.right.isDown || this.wasd.right.isDown || this.moveRight) {
-    //            this.treeplayer.body.velocity.x = 200;
-    //        } else if (this.cursor.down.isDown || this.wasd.down.isDown || this.moveDown) {
-    //            this.treeplayer.body.velocity.y = 200;
-    //        } else if (this.cursor.up.isDown || this.wasd.up.isDown || this.moveUp) {
-    //            this.treeplayer.body.velocity.y = -200;
-    //        } else {
-    //            // Stop the player
-    //            this.treeplayer.body.velocity.x = 0;
-    //            this.treeplayer.body.velocity.y = 0;
-    //            //this.player.animations.stop(); //Cease any animation
-    //            //this.player.frame = 0; // Change frame (to stand still)
-    //        }
-    //    },
 
     startMenu: function () {
         game.state.start('menu');
