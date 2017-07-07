@@ -4,6 +4,7 @@ var CO2No = 0; // Number of CO2 ingredients present.
 var waterNo = 0; // Number of water ingredients present.
 
 var wasCalled = false; // for debug.
+var appleChecked = false; // needed to run check only once.
 
 const RADIUS = 80; // Radius of circular motion.
 const SPEED = 0.0005 // Speed of the circular motion.
@@ -73,6 +74,10 @@ var treeState = {
             this.orientationChange();
         }
 
+        // Create empty objects for the apple's ingredients to fill later.
+        snappedNIng = {};
+        snappedCIng = {};
+        snappedWIng = {};
     },
 
     update: function () {
@@ -95,19 +100,42 @@ var treeState = {
 
     growingappleProperties: function () {
         var period = game.time.now * SPEED;
-        this.growingapple.x = game.world.centerX + Math.cos(period) * (RADIUS + 40);
+        this.growingapple.x = game.world.centerX + Math.cos(period) * (RADIUS + 40); // Path is slightly wider than it is tall.
         this.growingapple.y = game.world.centerY + Math.sin(period) * RADIUS;
 
         if (period % Math.PI < 0.01) {
-            game.camera.flash(0xffffff, 500);
+            game.camera.flash(0xffffff, 500); // Makes it easy to see when things are happening.
         }
 
-        if (Math.sin(period) < 0) {
-            this.growingapple.visible = true;
-        } else {
-            this.growingapple.visible = false;
-            this.clearApple();
+        if (Math.sin(period) < 0) { // When this.growingapple is on its way right, 
+            this.growingapple.visible = true; // allow it to be visible.
+            appleChecked = false;
+        } else { // When this.growingapple is on its way back to the left, check to see if 
+            if (appleChecked == false) { // it's a good time to check, and then if
+                var ingredients = this.growingapple.children; // the ingredients (aka, the children of the growingapple)
+                if (ingredients.includes(snappedNIng) && // include Nutrient, CO2, and Water.
+                    ingredients.includes(snappedCIng) &&
+                    ingredients.includes(snappedWIng)) {
+                    this.drawApple(); // If it does, draw a whole apple
+                    Client.sendApple();
+                    this.clearApple(); // Then clear the growingapple
+                    console.log("Everything is here.");
+                } else {
+                    console.log("Something's missing.");
+                    this.clearApple(); // Otherwise, just clear the growingapple
+                }
+
+                this.growingapple.visible = false;
+                appleChecked = true; // Run the check only once.
+            }
         }
+    },
+
+    drawApple: function () {
+        console.log("an apple is drawn here.");
+        drawnApple = game.add.sprite(game.width - 225, game.height/2, 'growingapple');
+        drawnApple.tint = 0xff9595;
+        game.add.tween(drawnApple).to({y: game.height + 80}, 1000).start();
     },
 
     clearApple: function () {
@@ -205,7 +233,7 @@ var treeState = {
         }
 
         // Replace the dragged sprite with a sprite snapped to the growingapple.
-        snappedNIng = growingapple.addChild(game.make.sprite(0, -20, 'nutrient'));
+        snappedNIng = this.growingapple.addChild(game.make.sprite(0, -20, 'nutrient'));
         snappedNIng.anchor.setTo(0.5, 0.5);
 
         // Decrease the number of nutrients available.
@@ -220,7 +248,7 @@ var treeState = {
             this.buildNutrient();
         }
 
-        snappedCIng = growingapple.addChild(game.make.sprite(-17, 8, 'CO2'));
+        snappedCIng = this.growingapple.addChild(game.make.sprite(-17, 8, 'CO2'));
         snappedCIng.anchor.setTo(0.5, 0.5);
 
         CO2No--;
@@ -234,7 +262,7 @@ var treeState = {
             this.buildWater();
         }
 
-        snappedWIng = growingapple.addChild(game.make.sprite(16, 8, 'water'));
+        snappedWIng = this.growingapple.addChild(game.make.sprite(16, 8, 'water'));
         snappedWIng.anchor.setTo(0.5, 0.5);
 
         waterNo--;
@@ -326,4 +354,16 @@ var treeState = {
             this.rotateLabel.text = '';
         }
     },
+
+    // **************UNNEEDED BUT POSSIBLY USEFUL
+    
+    //    contains: function (a, ing) { // Checks whether an array "a" has an object "ing".
+    //        for (var i = 0; i < a.length; i++) {
+    //            if (a[i] === ing) {
+    //                return true;
+    //            }
+    //        }
+    //        return false;
+    //    },
+
 };

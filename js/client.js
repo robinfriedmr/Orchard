@@ -24,6 +24,10 @@ Client.sendNutrient = function () {
     Client.socket.emit('sendNutrient');  
 };
 
+Client.sendApple = function () {
+    Client.socket.emit('sendApple');  
+};
+
 //************FROM SERVER****************
 Client.socket.on('you', function (data) {
     menuState.setID(data);
@@ -39,6 +43,10 @@ Client.socket.on('refreshID', function (data) {
 
 Client.socket.on('receiveNutrient', function () {
     treeState.nutrientSupply(); 
+});
+
+Client.socket.on('receiveApple', function () {
+    birdState.appleDrop();
 });
 
 // ~~`` Start Server Assigning States ``~~

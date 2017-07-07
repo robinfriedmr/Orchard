@@ -99,6 +99,11 @@ io.on('connection', function (socket) {
             console.log("server has wormplayer's nutrient")
             socket.broadcast.emit('receiveNutrient');
         });
+        
+        socket.on('sendApple', function () {
+            console.log("server has the Apple");
+            socket.broadcast.emit('receiveApple');
+        });
 
     });
 });

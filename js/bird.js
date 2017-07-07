@@ -65,6 +65,10 @@ var birdState = {
 //        this.movePlayer();
     },
 
+    appleDrop: function () {
+        console.log("An apple is dropped.");  
+    },
+    
     spaceCheck: function () {
         if (this.spacebar.isDown) {
             return true;
