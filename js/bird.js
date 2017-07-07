@@ -56,15 +56,15 @@ var birdState = {
             console.log("wasCalled is now " + wasCalled);
         }
 
-//        if (this.birdplayer.scale.x = -1) {
-//            if (this.birdplayer.angle < -20) {
-//                this.birdplayer.angle -= 1;
-//            }
-//        } else {
+        if (this.birdplayer.scale.x == -1) {
+            if (this.birdplayer.angle > -20) {
+                this.birdplayer.angle -= 1;
+            }
+        } else if (this.birdplayer.scale.x == 1) {
             if (this.birdplayer.angle < 20) {
                 this.birdplayer.angle += 1;
             }
-//        }
+        }
 
         this.debugDrop();
         this.movePlayer();
@@ -92,17 +92,17 @@ var birdState = {
     },
 
     jump: function () {
-        this.birdplayer.body.velocity.y = -500;
+        this.birdplayer.body.velocity.y = -200;
 
-//        if (this.birdplayer.scale.x = -1) {
-//            game.add.tween(this.birdplayer).to({
-//                angle: 20
-//            }, 100).start();
-//        } else {
+        if (this.birdplayer.scale.x == -1) {
+            game.add.tween(this.birdplayer).to({
+                angle: 20
+            }, 100).start();
+        } else if (this.birdplayer.scale.x == 1) {
             game.add.tween(this.birdplayer).to({
                 angle: -20
             }, 100).start();
-//        }
+        }
     },
 
     createWorld: function () {
@@ -139,23 +139,27 @@ var birdState = {
             this.jump();
 
             if (this.birdplayer.scale.x == 1) {
-                this.birdplayer.scale.x *= -1;
-                console.log("scale after left " + this.birdplayer.scale.x);
+                this.birdplayer.scale.x = -1;
             }
+
         } else if (this.cursor.right.isDown) {
             this.birdplayer.body.velocity.x = 200;
             this.jump();
 
             if (this.birdplayer.scale.x == -1) {
-                this.birdplayer.scale.x *= -1;
-                console.log("scale after right " + this.birdplayer.scale.x);
+                this.birdplayer.scale.x = 1;
             }
+
         } else if (this.cursor.up.isDown) {
             this.jump();
         } else {
             // Stop the player
             this.birdplayer.body.velocity.x = 0;
-            //this.birdplayer.body.velocity.y = 0;
+
+            if (this.birdplayer.body.onFloor() || this.birdplayer.body.touching.down) {
+                game.add.tween(this.birdplayer).to({angle: 0}, 100).start();
+            }
+
             //this.player.animations.stop(); //Cease any animation
             //this.player.frame = 0; // Change frame (to stand still)
         }
