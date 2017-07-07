@@ -1,29 +1,30 @@
+var wasCalledB = false;
+
 var birdState = {
 
     create: function () {
 
-        if (!game.device.desktop) {
-            this.addMobileInputs();
-        }
+        this.cursor = game.input.keyboard.createCursorKeys(); // for moving during the initial debug
 
-        // Arrow and WASD keys
-        this.cursor = game.input.keyboard.createCursorKeys();
-        this.wasd = {
-            up: game.input.keyboard.addKey(Phaser.Keyboard.W),
-            down: game.input.keyboard.addKey(Phaser.Keyboard.S),
-            left: game.input.keyboard.addKey(Phaser.Keyboard.A),
-            right: game.input.keyboard.addKey(Phaser.Keyboard.D)
-        };
-        this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.debugAppleDrop = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.wasCalledToggle = game.input.keyboard.addKey(Phaser.Keyboard.R);
+
+        this.fallingApple = {};
 
         // Add background and map (eventually) 
         this.createWorld();
 
         // Add sprites to the game
-//        this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'birdplayer');
-//
-//        //Enable physics on the sprites' bodies.
-//        game.physics.arcade.enable(this.birdplayer);
+        this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'bird');
+        this.birdplayer.anchor.setTo(0.5, 0.5);
+
+        // Enable physics on the sprites' bodies.
+        game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
+        this.birdplayer.body.gravity.y = 1000;
+        this.birdplayer.body.collideWorldBounds = true;
+
+        // When the mouse is clicked or the screen is tapped, play jump.
+        // this.bg.events.onInputDown.add(this.jump, this);
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -45,37 +46,63 @@ var birdState = {
             this.orientationChange();
         }
 
-        // *** This is an attempt to change the camera's view. ***
-        //Phaser.Camera = function (game, 0, 0, 12*25, 7*25) { }  
-        //this.view = new Phaser.Rectangle(0, 0, 12*25, 7*25);
-        //game.camera.width = 12 * 25;
-        //game.camera.height = 7 * 25;
     },
 
     update: function () {
-        // Collisions should always go at the top of the Update function.
-        //        game.physics.arcade.collide(this.nutrient, this.player, this.pullNutrient, this.spaceCheck, this);
-        //        game.physics.arcade.overlap(this.nutrient, this.goal, this.goalAchieved, null, this);
+        game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
 
+        if (this.wasCalledToggle.isDown && wasCalled == true) {
+            wasCalled = false; // Toggle wasCalled back to false.
+            console.log("wasCalled is now " + wasCalled);
+        }
 
-//        // If the player is dead, do nothing.
-//        if (!this.birdplayer.alive) {
-//            return;
+//        if (this.birdplayer.scale.x = -1) {
+//            if (this.birdplayer.angle < -20) {
+//                this.birdplayer.angle -= 1;
+//            }
+//        } else {
+            if (this.birdplayer.angle < 20) {
+                this.birdplayer.angle += 1;
+            }
 //        }
-//        this.movePlayer();
+
+        this.debugDrop();
+        this.movePlayer();
     },
 
     appleDrop: function () {
-        console.log("An apple is dropped.");  
+        console.log("An apple is dropped.");
+        this.fallingApple = game.add.sprite(game.width / 2, 0, 'growingapple');
+        game.physics.arcade.enable(this.fallingApple, Phaser.Physics.ARCADE);
+
     },
-    
-    spaceCheck: function () {
-        if (this.spacebar.isDown) {
-            return true;
-            console.log("Spacebar down is true.")
-        } else {
-            return false;
+
+    eatApple: function () {
+        console.log("The apple is eaten");
+        this.fallingApple.destroy();
+    },
+
+    debugDrop: function () {
+        if (!wasCalled && this.debugAppleDrop.isDown) {
+            wasCalled = true;
+            console.log("wasCalled is now " + wasCalled);
+
+            this.appleDrop();
         }
+    },
+
+    jump: function () {
+        this.birdplayer.body.velocity.y = -500;
+
+//        if (this.birdplayer.scale.x = -1) {
+//            game.add.tween(this.birdplayer).to({
+//                angle: 20
+//            }, 100).start();
+//        } else {
+            game.add.tween(this.birdplayer).to({
+                angle: -20
+            }, 100).start();
+//        }
     },
 
     createWorld: function () {
@@ -91,30 +118,44 @@ var birdState = {
         //        this.layer.resizeWorld();
         //        // Enable collisions for the first tilset element (the blue wall)
         //        this.map.setCollision([3, 4]);
-        game.add.image(0, 0, 'birdBG');
+        this.bg = game.add.image(0, 0, 'birdBG');
+        this.bg.inputEnabled = true; // allow the click/tap event to actually do something
+
+        game.physics.arcade.gravity.y = 500; //world gravity
+
     },
 
     movePlayer: function () {
-        // If 0 fingers are touching the screen
-        if (game.input.totalActivePointers == 0) {
-            // Make sure the player is not moving
-            this.moveLeft = false;
-            this.moveRight = false;
-        }
+        //        // If 0 fingers are touching the screen
+        //        if (game.input.totalActivePointers == 0) {
+        //            // Make sure the player is not moving
+        //            this.moveLeft = false;
+        //            this.moveRight = false;
+        //        }
 
         // Moving conditions
-        if (this.cursor.left.isDown || this.wasd.left.isDown || this.moveLeft) {
+        if (this.cursor.left.isDown) {
             this.birdplayer.body.velocity.x = -200;
-        } else if (this.cursor.right.isDown || this.wasd.right.isDown || this.moveRight) {
+            this.jump();
+
+            if (this.birdplayer.scale.x == 1) {
+                this.birdplayer.scale.x *= -1;
+                console.log("scale after left " + this.birdplayer.scale.x);
+            }
+        } else if (this.cursor.right.isDown) {
             this.birdplayer.body.velocity.x = 200;
-        } else if (this.cursor.down.isDown || this.wasd.down.isDown || this.moveDown) {
-            this.birdplayer.body.velocity.y = 200;
-        } else if (this.cursor.up.isDown || this.wasd.up.isDown || this.moveUp) {
-            this.birdplayer.body.velocity.y = -200;
+            this.jump();
+
+            if (this.birdplayer.scale.x == -1) {
+                this.birdplayer.scale.x *= -1;
+                console.log("scale after right " + this.birdplayer.scale.x);
+            }
+        } else if (this.cursor.up.isDown) {
+            this.jump();
         } else {
             // Stop the player
             this.birdplayer.body.velocity.x = 0;
-            this.birdplayer.body.velocity.y = 0;
+            //this.birdplayer.body.velocity.y = 0;
             //this.player.animations.stop(); //Cease any animation
             //this.player.frame = 0; // Change frame (to stand still)
         }
@@ -126,12 +167,12 @@ var birdState = {
 
     // ****************** MOBILE FUNCTIONS *****************
     addMobileInputs: function () {
-//        // Add the jump button
-//        var jumpButton = game.add.sprite(350, 240, 'jumpButton');
-//        jumpButton.inputEnabled = true;
-//        jumpButton.alpha = 0.5;
-//        // Call 'jumpPlayer' when the 'jumpButton' is pressed
-//        jumpButton.events.onInputDown.add(this.jumpPlayer, this);
+        //        // Add the jump button
+        //        var jumpButton = game.add.sprite(350, 240, 'jumpButton');
+        //        jumpButton.inputEnabled = true;
+        //        jumpButton.alpha = 0.5;
+        //        // Call 'jumpPlayer' when the 'jumpButton' is pressed
+        //        jumpButton.events.onInputDown.add(this.jumpPlayer, this);
 
         this.moveLeft = false;
         this.moveRight = false;
