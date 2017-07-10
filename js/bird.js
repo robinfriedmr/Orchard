@@ -16,11 +16,19 @@ var birdState = {
         // Pooped seed emitter
         this.emitter = game.add.emitter(0, 0, 8);
         this.emitter.makeParticles('seeds');
-        this.emitter.gravity = 500;
-
+        //this.emitter.gravity = 500;
+        this.emitter.setYSpeed(5, 500);
+        //var image = game.add.image(game.width/2, game.height/2, 'seeds'); // Not showing up.
 
         // Add background and map (eventually) 
         this.createWorld();
+
+        birdState.bScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
+            font: '24px Arial',
+            fill: '#ffffff'
+        });
+
+        console.log(birdState.bScoreLabel);
 
         // Add sprites to the game
         this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
@@ -74,16 +82,21 @@ var birdState = {
         }
 
         this.debugDrop();
-        this.propagate(); // call this continuously to check if it's true.
+        this.propagate();
         this.movePlayer();
-        
-        console.log(this.emitter.on); // **************
     },
 
     appleDrop: function () {
         console.log("An apple is dropped.");
-        this.fallingApple = game.add.sprite(game.width / 2, 0, 'growingapple');
+        this.fallingApple = game.add.sprite(this.getRandomInt(50, game.width - 50), 0, 'growingapple');
+        this.fallingApple.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(this.fallingApple, Phaser.Physics.ARCADE);
+    },
+
+    getRandomInt: function (min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
     },
 
     eatApple: function () {
@@ -100,19 +113,33 @@ var birdState = {
 
             if (this.poopButton.isDown && this.birdplayer.x > game.width - 200) {
                 console.log("Player is on the right side of the screen and the poopButton is pressed.");
-                appleEaten = false;
                 this.dump(this.birdplayer.x, this.birdplayer.y);
             }
         }
     },
 
     dump: function (x, y) {
+        appleEaten = false;
+
         this.emitter.x = x;
         this.emitter.y = y;
-        this.emitter.start(true, 1000, null);
+
+        this.emitter.start(true, 1000, null, 8, 8);
 
         console.log(this.emitter.x + ", " + this.emitter.y + " is the emitter.");
         console.log(this.emitter.on); // this is returning false?
+
+        Client.sendSeed(this.birdplayer.x);
+    },
+
+    plantSeed: function (seedX) {
+        game.add.image(seedX, game.height - 25, 'nutrient');
+    },
+
+    updateScore: function (bScore) {
+        if (birdState.bScoreLabel) {
+            birdState.bScoreLabel.setText('trees planted: ' + bScore);
+        }
     },
 
     debugDrop: function () {

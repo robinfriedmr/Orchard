@@ -28,6 +28,10 @@ Client.sendApple = function () {
     Client.socket.emit('sendApple');  
 };
 
+Client.sendSeed = function (seedX) {
+    Client.socket.emit('sendSeed', seedX);
+}
+
 //************FROM SERVER****************
 Client.socket.on('you', function (data) {
     menuState.setID(data);
@@ -48,6 +52,21 @@ Client.socket.on('receiveNutrient', function () {
 Client.socket.on('receiveApple', function () {
     birdState.appleDrop();
 });
+
+Client.socket.on('plantSeed', function (seedX) {
+    birdState.plantSeed(seedX);
+});
+
+Client.socket.on('updateScore', function (score) {
+    wormState.updateScore(score);
+    treeState.updateScore(score);
+    birdState.updateScore(score);
+});
+
+Client.socket.on('wupdateScore', function (score) {
+    wormState.updateScore(score);
+});
+
 
 // ~~`` Start Server Assigning States ``~~
 Client.socket.on('wormGo', function (data) {

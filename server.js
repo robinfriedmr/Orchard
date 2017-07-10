@@ -20,6 +20,8 @@ httpServer.currentData = { // 'PD' for Player Data
     birdPD: -1
 };
 
+httpServer.score = 0;
+
 httpServer.listen(8152, function () {
     console.log('Listening on ' + httpServer.address().port);
 });
@@ -103,6 +105,16 @@ io.on('connection', function (socket) {
         socket.on('sendApple', function () {
             console.log("server has the Apple");
             socket.broadcast.emit('receiveApple');
+        });
+        
+        socket.on('sendSeed', function (seedX) {
+            console.log("Server has the seed, at " + seedX);
+            socket.emit('plantSeed', seedX); // tell the birdplayer to plant the seed
+            
+            httpServer.score++; //increase server score
+            console.log("The score is now " + httpServer.score);
+            io.emit('updateScore', httpServer.score);
+            //socket.broadcast.emit('wupdateScore', httpServer.score);
         });
 
     });

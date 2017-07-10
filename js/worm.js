@@ -4,7 +4,7 @@
 
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
-var worm, apple, nutrient, 
+var worm, apple, nutrient,
     squareSize, speed, collisionCounter,
     updateDelay, direction, new_direction;
 
@@ -29,6 +29,11 @@ var wormState = {
         // Add map 
         this.createWorld();
 
+        wormState.wScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
+            font: '24px Arial',
+            fill: '#ffffff'
+        });
+
         worm = []; // This will work as a stack, containing the parts of our worm
         apple = {}; // An object for the apple;
         nutrient = {}; // An object for the nutrient***.
@@ -40,11 +45,10 @@ var wormState = {
         new_direction = null; // A buffer to store the new direction into.
 
         // Add sprites to the game
-
         for (var i = 0; i < 10; i++) {
             worm[i] = game.add.sprite(150 + i * squareSize, 150, 'wormsquare');
         }
-
+        
         // Genereate the first apple.
         this.generateApple();
 
@@ -95,7 +99,7 @@ var wormState = {
                 lastCell = worm.shift(),
                 oldLastCellx = lastCell.x,
                 oldLastCelly = lastCell.y;
-            
+
             // Check for collision with wall. Parameter is the head of the worm. ***TRYING TO GET THIS TO ACTUALLY MAKE THE WORM CHANGE DIRECTION. ***
             this.wallCollision(firstCell);
 
@@ -125,11 +129,28 @@ var wormState = {
             }
             worm.push(lastCell); // Place the last cell in the front of the stack.
             firstCell = lastCell; // Mark it the first cell.
-            
-            console.log("X is " + firstCell.x + " Y is " + firstCell.y);
         }
     },
 
+    wallCollision: function (head) {
+        if (head.x >= (game.width) || head.x < 0 || head.y >= (game.height) || head.y < 0) {
+            // If the head is not in, we've hit a wall. Add to counter.
+            collisionCounter++;
+            console.log(collisionCounter);
+
+            if (direction == 'right') {
+                new_direction == 'up';
+            } else if (direction == 'left') {
+                new_direction == 'down';
+            } else if (direction == 'up') {
+                new_direction == 'left';
+            } else if (direction == 'down') {
+                new_direction == 'right';
+            }
+        }
+    },
+
+    
     generateApple: function () {
         // Chose a random place on the grid.
         var randomX = Math.floor(Math.random() * 40) * squareSize,
@@ -139,31 +160,22 @@ var wormState = {
         apple = game.add.sprite(randomX, randomY, 'applesquare');
     },
 
-    //    spaceCheck: function () {
-    //        if (this.spacebar.isDown) {
-    //            return true;
-    //            console.log("Spacebar down is true.")
-    //        } else {
-    //            return false;
-    //        }
-    //    },
-
     appleCollision: function () {
 
         // Check if any part of the worm is overlapping the apple.
         for (var i = 0; i < worm.length; i++) {
             if (worm[i].x == apple.x && worm[i].y == apple.y) {
-                
+
                 // Put in a nutrient where the apple is.
                 game.add.sprite(apple.x, apple.y, 'nutrient');
                 // Send a nutrient to the server.
                 Client.sendNutrient();
-                
+
                 // Destroy the old apple.
                 apple.destroy();
                 // Make a new one.
                 this.generateApple();
-                
+
                 if (collisionCounter > 0) {
                     collisionCounter--;
                     console.log(collisionCounter);
@@ -178,29 +190,8 @@ var wormState = {
             if (head.x == worm[i].x && head.y == worm[i].y) {
                 collisionCounter++;
                 console.log(collisionCounter);
-
             }
         }
-    },
-
-    wallCollision: function (head) {
-        if (head.x >= (game.width) || head.x < 0 || head.y >= (game.height) || head.y < 0) {
-            // If the head is not in, we've hit a wall. Add to counter.
-            collisionCounter++;
-            console.log(collisionCounter);
-            
-            if (direction == 'right') {
-                new_direction == 'up';
-            } else if (direction == 'left') {
-                new_direction == 'down';
-            } else if (direction == 'up') {
-                new_direction == 'left';
-            } else if (direction == 'down') {
-                new_direction == 'right';
-            }
-            
-        }
-
     },
 
     createWorld: function () {
@@ -218,6 +209,13 @@ var wormState = {
         //        // Enable collisions for the XX'th tilset elements (dark worm, roots, worms)
         //        this.map.setCollision();
     },
+
+    updateScore: function (wScore) {
+        if (wormState.wScoreLabel) {
+            wormState.wScoreLabel.setText('trees planted: ' + wScore);
+        }
+    },
+
 
     //    movePlayer: function () {
     //        // If 0 fingers are touching the screen
@@ -249,7 +247,7 @@ var wormState = {
     //        }
     //    },
 
-  //    startMenu: function () {
+    //    startMenu: function () {
     //        game.state.start('menu');
     //    },
 

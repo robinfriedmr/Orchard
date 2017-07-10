@@ -30,6 +30,11 @@ var treeState = {
         // Add background and map (eventually) 
         this.createWorld();
 
+        treeState.tScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
+            font: '24px Arial',
+            fill: '#ffffff'
+        });
+
         // Add icons on UI to indicate ingredients
         this.nImage = game.add.image(40, 185, 'nutrient');
         this.CImage = game.add.image(40, 235, 'CO2');
@@ -133,9 +138,11 @@ var treeState = {
 
     drawApple: function () {
         console.log("an apple is drawn here.");
-        drawnApple = game.add.sprite(game.width - 225, game.height/2, 'growingapple');
+        drawnApple = game.add.sprite(game.width - 225, game.height / 2, 'growingapple');
         drawnApple.tint = 0xff9595;
-        game.add.tween(drawnApple).to({y: game.height + 80}, 1000).start();
+        game.add.tween(drawnApple).to({
+            y: game.height + 80
+        }, 1000).start();
     },
 
     clearApple: function () {
@@ -147,13 +154,13 @@ var treeState = {
             wasCalled = true; // set wasCalled to true to prevent the event from triggering a zillion times, and
             console.log("wasCalled is now " + wasCalled); // print to the console the new value for wasCalled.
 
-            this.nutrientSupply(); // And, most importantly, run the nutrientSupply function.
+            this.nutrientSupply();
         }
     },
 
     nutrientSupply: function () {
         if (nutrientNo == 0) {
-            this.buildNutrient(); // Build a new *sprite* only if there aren't any already existing in the stack.
+            this.buildNutrient();
         }
         nutrientNo++;
         nutrientNoText.text = nutrientNo.toString();
@@ -171,7 +178,7 @@ var treeState = {
 
     CO2Supply: function () {
         if (CO2No == 0) {
-            this.buildCO2(); // Build a new *sprite* only if there aren't any already existing in the stack.
+            this.buildCO2();
         }
         CO2No++;
         CO2NoText.text = CO2No.toString();
@@ -288,8 +295,10 @@ var treeState = {
         //    
     },
 
-    startMenu: function () {
-        game.state.start('menu');
+    updateScore: function (tScore) {
+        if (treeState.tScoreLabel) {
+            treeState.tScoreLabel.setText('trees planted: ' + tScore);
+        }
     },
 
     // ****************** MOBILE FUNCTIONS *****************
@@ -356,7 +365,7 @@ var treeState = {
     },
 
     // **************UNNEEDED BUT POSSIBLY USEFUL
-    
+
     //    contains: function (a, ing) { // Checks whether an array "a" has an object "ing".
     //        for (var i = 0; i < a.length; i++) {
     //            if (a[i] === ing) {
