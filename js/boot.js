@@ -23,6 +23,7 @@ var bootState = {
         game.load.image('growingapple', 'assets/img/growingapple.png');
         
         game.load.image('bird', 'assets/img/bird.png');
+        game.load.image('seeds', 'assets/img/seeds.png');
 
 
 //        game.load.image('sunplayer', 'assets/sunplayer.png');

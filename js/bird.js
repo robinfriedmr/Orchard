@@ -1,21 +1,29 @@
 var wasCalledB = false;
+var appleEaten = false;
 
 var birdState = {
 
     create: function () {
 
-        this.cursor = game.input.keyboard.createCursorKeys(); // for moving during the initial debug
+        this.cursor = game.input.keyboard.createCursorKeys();
 
         this.debugAppleDrop = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.poopButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
         this.wasCalledToggle = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
         this.fallingApple = {};
+
+        // Pooped seed emitter
+        this.emitter = game.add.emitter(0, 0, 8);
+        this.emitter.makeParticles('seeds');
+        this.emitter.gravity = 500;
+
 
         // Add background and map (eventually) 
         this.createWorld();
 
         // Add sprites to the game
-        this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 2, 'bird');
+        this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
         this.birdplayer.anchor.setTo(0.5, 0.5);
 
         // Enable physics on the sprites' bodies.
@@ -45,7 +53,6 @@ var birdState = {
             // Call the function at least once
             this.orientationChange();
         }
-
     },
 
     update: function () {
@@ -67,26 +74,51 @@ var birdState = {
         }
 
         this.debugDrop();
+        this.propagate(); // call this continuously to check if it's true.
         this.movePlayer();
+        
+        console.log(this.emitter.on); // **************
     },
 
     appleDrop: function () {
         console.log("An apple is dropped.");
         this.fallingApple = game.add.sprite(game.width / 2, 0, 'growingapple');
         game.physics.arcade.enable(this.fallingApple, Phaser.Physics.ARCADE);
-
     },
 
     eatApple: function () {
-        console.log("The apple is eaten");
-        this.fallingApple.destroy();
+        if (appleEaten == false) {
+            this.fallingApple.destroy();
+            console.log("The apple is eaten");
+            appleEaten = true;
+        }
+    },
+
+    propagate: function () {
+        if (appleEaten == true) {
+            console.log("We must poop the apple seeds!");
+
+            if (this.poopButton.isDown && this.birdplayer.x > game.width - 200) {
+                console.log("Player is on the right side of the screen and the poopButton is pressed.");
+                appleEaten = false;
+                this.dump(this.birdplayer.x, this.birdplayer.y);
+            }
+        }
+    },
+
+    dump: function (x, y) {
+        this.emitter.x = x;
+        this.emitter.y = y;
+        this.emitter.start(true, 1000, null);
+
+        console.log(this.emitter.x + ", " + this.emitter.y + " is the emitter.");
+        console.log(this.emitter.on); // this is returning false?
     },
 
     debugDrop: function () {
-        if (!wasCalled && this.debugAppleDrop.isDown) {
+        if (!wasCalled && this.debugAppleDrop.isDown && appleEaten == false) {
             wasCalled = true;
             console.log("wasCalled is now " + wasCalled);
-
             this.appleDrop();
         }
     },
@@ -106,7 +138,6 @@ var birdState = {
     },
 
     createWorld: function () {
-
         //        // Create the tilemap
         //        this.map = game.add.tilemap('map');
         //        // Add the tileset to the map
@@ -157,7 +188,9 @@ var birdState = {
             this.birdplayer.body.velocity.x = 0;
 
             if (this.birdplayer.body.onFloor() || this.birdplayer.body.touching.down) {
-                game.add.tween(this.birdplayer).to({angle: 0}, 100).start();
+                game.add.tween(this.birdplayer).to({
+                    angle: 0
+                }, 100).start();
             }
 
             //this.player.animations.stop(); //Cease any animation
