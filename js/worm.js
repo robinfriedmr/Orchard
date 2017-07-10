@@ -48,7 +48,7 @@ var wormState = {
         for (var i = 0; i < 10; i++) {
             worm[i] = game.add.sprite(150 + i * squareSize, 150, 'wormsquare');
         }
-        
+
         // Genereate the first apple.
         this.generateApple();
 
@@ -113,48 +113,55 @@ var wormState = {
                 direction = new_direction;
                 new_direction = null;
             }
-            // Change the last cell's coordinates relative to the head of the worm, according to the direction.
-            if (direction == 'right') {
-                lastCell.x = firstCell.x + squareSize;
-                lastCell.y = firstCell.y;
-            } else if (direction == 'left') {
-                lastCell.x = firstCell.x - squareSize;
-                lastCell.y = firstCell.y;
-            } else if (direction == 'up') {
-                lastCell.x = firstCell.x;
-                lastCell.y = firstCell.y - squareSize;
-            } else if (direction == 'down') {
-                lastCell.x = firstCell.x;
-                lastCell.y = firstCell.y + squareSize;
-            }
-            worm.push(lastCell); // Place the last cell in the front of the stack.
-            firstCell = lastCell; // Mark it the first cell.
+
+            this.wormMovement(lastCell, firstCell);
         }
     },
 
-    wallCollision: function (head) {
-        if (head.x >= (game.width) || head.x < 0 || head.y >= (game.height) || head.y < 0) {
-            // If the head is not in, we've hit a wall. Add to counter.
+    wormMovement: function (lastCell, firstCell) {
+        // Change the last cell's coordinates relative to the head of the worm, according to the direction.
+        if (direction == 'right') {
+            lastCell.x = firstCell.x + squareSize;
+            lastCell.y = firstCell.y;
+        } else if (direction == 'left') {
+            lastCell.x = firstCell.x - squareSize;
+            lastCell.y = firstCell.y;
+        } else if (direction == 'up') {
+            lastCell.x = firstCell.x;
+            lastCell.y = firstCell.y - squareSize;
+        } else if (direction == 'down') {
+            lastCell.x = firstCell.x;
+            lastCell.y = firstCell.y + squareSize;
+        }
+        worm.push(lastCell); // Place the last cell in the front of the stack.
+        firstCell = lastCell; // Mark it the first cell.
+    },
+
+    wallCollision: function (head) {        
+        if (direction == 'right' && head.x == (game.width - squareSize)) {
+            new_direction = 'up';
             collisionCounter++;
             console.log(collisionCounter);
-
-            if (direction == 'right') {
-                new_direction == 'up';
-            } else if (direction == 'left') {
-                new_direction == 'down';
-            } else if (direction == 'up') {
-                new_direction == 'left';
-            } else if (direction == 'down') {
-                new_direction == 'right';
-            }
+        } else if (direction == 'left' && head.x == 0) {
+            new_direction = 'down';
+            collisionCounter++;
+            console.log(collisionCounter);
+        } else if (direction == 'up' && head.y == 0) {
+            new_direction = 'left';
+            collisionCounter++;
+            console.log(collisionCounter);
+        } else if (direction == 'down' && head.y == (game.height - squareSize)) {
+            new_direction = 'right';
+            collisionCounter++;
+            console.log(collisionCounter);
         }
     },
 
-    
+
     generateApple: function () {
         // Chose a random place on the grid.
-        var randomX = Math.floor(Math.random() * 40) * squareSize,
-            randomY = Math.floor(Math.random() * 23) * squareSize;
+        var randomX = (Math.floor(Math.random() * 37) * squareSize) + squareSize,
+            randomY = (Math.floor(Math.random() * 20) * squareSize) + squareSize;
 
         // Add a new apple.
         apple = game.add.sprite(randomX, randomY, 'applesquare');
