@@ -3,96 +3,107 @@ var appleEaten = false;
 
 var birdState = {
 
-        create: function () {
+    create: function () {
 
-            this.cursor = game.input.keyboard.createCursorKeys();
+        this.cursor = game.input.keyboard.createCursorKeys();
 
-            this.debugAppleDrop = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-            this.poopButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
-            this.wasCalledToggle = game.input.keyboard.addKey(Phaser.Keyboard.R);
+        this.debugAppleDrop = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.poopButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
+        this.wasCalledToggle = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
-            this.fallingApple = {};
+        this.fallingApple = {};
 
-            // Pooped seed emitter
-            this.emitter = game.add.emitter(0, 0, 8);
-            this.emitter.makeParticles('seeds');
-            //this.emitter.gravity = 500;
-            this.emitter.setYSpeed(5, 500);
-            //var image = game.add.image(game.width/2, game.height/2, 'seeds'); // Not showing up.
+        // Pooped seed emitter
+        this.emitter = game.add.emitter(50, 50, 80);
+        this.emitter.makeParticles('bird');
+        this.emitter.gravity = 500;
+        this.emitter.start(true, 1000, null, 8, 8);
+        
+        var image = game.add.image(game.width/2, game.height/2, 'seeds'); // Not showing up.
 
-            // Add background and map (eventually) 
-            this.createWorld();
+        // Add background and map (eventually) 
+        this.createWorld();
 
-            birdState.bScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
-                font: '24px Arial',
-                fill: '#ffffff'
-            });
+        birdState.bScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
+            font: '24px Arial',
+            fill: '#ffffff'
+        });
 
-            // Add sprites to the game
-            this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
-            this.birdplayer.anchor.setTo(0.5, 0.5);
+        // Add sprites to the game
+        this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
+        this.birdplayer.anchor.setTo(0.5, 0.5);
 
-            // Enable physics on the sprites' bodies.
-            game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
-            this.birdplayer.body.gravity.y = 1000;
-            this.birdplayer.body.collideWorldBounds = true;
+        // Enable physics on the sprites' bodies.
+        game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
+        this.birdplayer.body.gravity.y = 1000;
+        this.birdplayer.body.collideWorldBounds = true;
 
-            // When the mouse is clicked or the screen is tapped, play jump.
-            // this.bg.events.onInputDown.add(this.jump, this);
+        // When the mouse is clicked or the screen is tapped, play jump.
+        // this.bg.events.onInputDown.add(this.jump, this);
 
-            // The arrow keys will only ever affect the game, not the browswer window.
-            game.input.keyboard.addKeyCapture(
+        // The arrow keys will only ever affect the game, not the browswer window.
+        game.input.keyboard.addKeyCapture(
             [Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,
              Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT,
              Phaser.Keyboard.SPACEBAR]);
 
-            if (!game.device.desktop) {
-                // Create an empty label to write the error message if needed
-                this.rotateLabel = game.add.text(game.width / 2, game.height / 2, '', {
-                    font: '30px Arial',
-                    fill: '#fff',
-                    backgroundColor: '#000'
-                });
-                this.rotateLabel.anchor.setTo(0.5, 0.5);
-                // Call 'orientationChange' when the device is rotated
-                game.scale.onOrientationChange.add(this.orientationChange, this);
-                // Call the function at least once
-                this.orientationChange();
-            }
-        },
+        if (!game.device.desktop) {
+            // Create an empty label to write the error message if needed
+            this.rotateLabel = game.add.text(game.width / 2, game.height / 2, '', {
+                font: '30px Arial',
+                fill: '#fff',
+                backgroundColor: '#000'
+            });
+            this.rotateLabel.anchor.setTo(0.5, 0.5);
+            // Call 'orientationChange' when the device is rotated
+            game.scale.onOrientationChange.add(this.orientationChange, this);
+            // Call the function at least once
+            this.orientationChange();
+        }
+    },
 
-        update: function () {
-            game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
+    update: function () {
 
-            // For debug.
-            if (this.wasCalledToggle.isDown && wasCalled == true) {
-                wasCalled = false; // Toggle wasCalled back to false.
-                console.log("wasCalled is now " + wasCalled);
-            }
-            this.debugDrop();
+        game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
 
-            // Change angle of bird to encourage flapping.
-            if (this.birdplayer.scale.x == -1) {
-                if (this.birdplayer.angle > -20) {
-                    this.birdplayer.angle -= 1;
-                }
-            } else if (this.birdplayer.scale.x == 1) {
-                if (this.birdplayer.angle < 20) {
-                    this.birdplayer.angle += 1;
-                }
+        // For debug.
+        if (this.wasCalledToggle.isDown && wasCalled == true) {
+            wasCalled = false; // Toggle wasCalled back to false.
+            console.log("wasCalled is now " + wasCalled);
+        }
+        this.debugDrop();
+
+        // Change angle of bird to encourage flapping.
+        if (this.birdplayer.scale.x == -1) {
+            if (this.birdplayer.angle > -20) {
+                this.birdplayer.angle -= 1;
             }
-            
-            // *************************
+        } else if (this.birdplayer.scale.x == 1) {
+            if (this.birdplayer.angle < 20) {
+                this.birdplayer.angle += 1;
+            }
+        }
+
+        // *************************
+        if (this.fallingApple.alive == true) {
             if (this.fallingApple.y > game.height + 40) {
                 this.destroyFallenApple();
             }
-            this.propagate();
-            this.movePlayer();
-        },
+        }
+        
+        this.propagate();
+        this.movePlayer();
+    },
 
     destroyFallenApple: function () {
-        this.fallingApple.kill();
+
+        this.fallingApple.alive = false;
+        this.fallingApple.destroy();
+        //        console.log(this.fallingApple.destroyPhase);
+
         console.log(this.fallingApple); // *********
+
+
         Client.sendDecay();
     },
 
@@ -133,7 +144,8 @@ var birdState = {
         this.emitter.y = y;
 
         this.emitter.start(true, 1000, null, 8, 8);
-
+        this.emitter.on = true;
+        
         console.log(this.emitter.x + ", " + this.emitter.y + " is the emitter.");
         console.log(this.emitter.on); // this is returning false?
 
