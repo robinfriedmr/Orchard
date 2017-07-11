@@ -20,6 +20,12 @@ httpServer.currentData = { // 'PD' for Player Data
     birdPD: -1
 };
 
+// Game state (via the index number) is linked to the socket.id.
+var playerMap = [-1, -1, -1]; // replace with " " if this doesn't work
+const WORM_GAME = 0;
+const TREE_GAME = 1;
+const BIRD_GAME = 2;
+
 httpServer.score = 0;
 
 httpServer.listen(8152, function () {
@@ -40,11 +46,11 @@ io.on('connection', function (socket) {
 
         socket.on('disconnect', function () {
             console.log("Player " + socket.player.id + " disconnected.");
-            
+
             // Check player ID against currentData.
             // Change that player ID value back to -1 (invalid ID).
             // Send the currentData out for all connected players. 
-            
+
             if (socket.player.id == httpServer.currentData.wormPD) {
                 httpServer.currentData.wormPD = -1;
                 io.emit('refreshID', httpServer.currentData);
@@ -57,21 +63,25 @@ io.on('connection', function (socket) {
             } else {
                 return;
             }
-            
+
         });
 
         // BEGIN REQUEST FUNCTIONS
         socket.on('wormRequest', function () {
             // The player who requested Worm is given their own ID.
             socket.emit('wormGo', socket.player.id);
+            playerMap[WORM_GAME] = socket.id;
+            
             // Everyone else is not allowed to choose Worm.
             httpServer.currentData.wormPD = socket.player.id; // update currentData object on server
             socket.broadcast.emit('wormNo', httpServer.currentData.wormPD); // emit the new value of wormPD
-            console.log(httpServer.currentData.wormPD + " is the ID value of wormPD.");
+            console.log(httpServer.currentData.wormPD + " is the player ID value of wormPD.");
         });
         socket.on('treeRequest', function () {
             // The player who requested Tree is given their own ID.
-            socket.emit('treeGo', socket.player.id);      
+            socket.emit('treeGo', socket.player.id);
+            playerMap[TREE_GAME] = socket.id;
+
             // Everyone else is not allowed to choose Tree.
             httpServer.currentData.treePD = socket.player.id;
             socket.broadcast.emit('treeNo', httpServer.currentData.treePD);
@@ -79,7 +89,9 @@ io.on('connection', function (socket) {
         });
         socket.on('birdRequest', function () {
             // The player who requested Bird is given their own ID.
-            socket.emit('birdGo', socket.player.id);   
+            socket.emit('birdGo', socket.player.id);
+            playerMap[BIRD_GAME] = socket.id;
+            
             // Everyone else is not allowed to choose Bird.
             httpServer.currentData.birdPD = socket.player.id;
             socket.broadcast.emit('birdNo', httpServer.currentData.birdPD);
@@ -96,25 +108,41 @@ io.on('connection', function (socket) {
         } else {
             console.log("Not all roles are undefined, but no role has been given a valid player ID.");
         }
-        
-        socket.on('sendNutrient', function() {
-            console.log("server has wormplayer's nutrient")
-            socket.broadcast.emit('receiveNutrient');
+
+        socket.on('sendNutrient', function () {
+            console.log("server has wormplayer's nutrient");
+            if (playerMap[TREE_GAME] != -1) {
+                socket.to(playerMap[TREE_GAME]).emit('receiveNutrient'); 
+            }
+        });
+
+        socket.on('pullNutrient', function () {
+            if (playerMap[WORM_GAME] != -1) {
+                socket.to(playerMap[WORM_GAME]).emit('eraseNutrient');
+            } 
         });
         
         socket.on('sendApple', function () {
             console.log("server has the Apple");
-            socket.broadcast.emit('receiveApple');
+            if (playerMap[BIRD_GAME] != -1) {
+                socket.to(playerMap[BIRD_GAME]).emit('receiveApple');
+            }
         });
         
+        socket.on('sendDecay', function () {
+            console.log("server has decayed matter"); 
+            if (playerMap[WORM_GAME] != -1) {
+                socket.to(playerMap[WORM_GAME]).emit('receiveDecay');
+            }
+        });
+
         socket.on('sendSeed', function (seedX) {
             console.log("Server has the seed, at " + seedX);
             socket.emit('plantSeed', seedX); // tell the birdplayer to plant the seed
-            
+
             httpServer.score++; //increase server score
             console.log("The score is now " + httpServer.score);
             io.emit('updateScore', httpServer.score);
-            //socket.broadcast.emit('wupdateScore', httpServer.score);
         });
 
     });

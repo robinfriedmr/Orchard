@@ -24,13 +24,21 @@ Client.sendNutrient = function () {
     Client.socket.emit('sendNutrient');  
 };
 
+Client.pullNutrient = function () {
+    Client.socket.emit('pullNutrient');  
+};
+
 Client.sendApple = function () {
     Client.socket.emit('sendApple');  
 };
 
+Client.sendDecay = function () {
+    Client.socket.emit('sendDecay');  
+};
+
 Client.sendSeed = function (seedX) {
     Client.socket.emit('sendSeed', seedX);
-}
+};
 
 //************FROM SERVER****************
 Client.socket.on('you', function (data) {
@@ -49,8 +57,16 @@ Client.socket.on('receiveNutrient', function () {
     treeState.nutrientSupply(); 
 });
 
+Client.socket.on('eraseNutrient', function () {
+    wormState.eraseNutrient(); 
+});
+
 Client.socket.on('receiveApple', function () {
     birdState.appleDrop();
+});
+
+Client.socket.on('receiveDecay', function () {
+    wormState.newDecay(); 
 });
 
 Client.socket.on('plantSeed', function (seedX) {
@@ -62,11 +78,6 @@ Client.socket.on('updateScore', function (score) {
     treeState.updateScore(score);
     birdState.updateScore(score);
 });
-
-Client.socket.on('wupdateScore', function (score) {
-    wormState.updateScore(score);
-});
-
 
 // ~~`` Start Server Assigning States ``~~
 Client.socket.on('wormGo', function (data) {

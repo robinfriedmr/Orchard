@@ -1,10 +1,13 @@
 var nutrientNo = 0; // Create global variable 'nutrientNo' to represent the number of nutrient ingredients present.
-console.log("nutrientNo is starting at " + nutrientNo);
 var CO2No = 0; // Number of CO2 ingredients present.
 var waterNo = 0; // Number of water ingredients present.
 
-var wasCalled = false; // for debug.
-var appleChecked = false; // needed to run check only once.
+var wasCalledT = false; // for debug.
+var appleChecked = false; // needed to run check for ingredients only once.
+var movedoff = false; // check for sprite movement off the pile
+var itmatters = false;
+
+var updateDelayT = 0;
 
 const RADIUS = 80; // Radius of circular motion.
 const SPEED = 0.0005 // Speed of the circular motion.
@@ -39,6 +42,8 @@ var treeState = {
         this.nImage = game.add.image(40, 185, 'nutrient');
         this.CImage = game.add.image(40, 235, 'CO2');
         this.wImage = game.add.image(40, 285, 'water');
+
+        this.nutrientIng = {};
 
         // Add numbers to show the number of ingredients in each stack.
         var textStyle_Nutrient = {
@@ -93,14 +98,34 @@ var treeState = {
 
         this.growingappleProperties(); // Run the math that places the apple and decides whether it's shown.
 
-        this.debugNutrient(); // Call in a nutrient when conditions are met.
-        this.debugCO2(); // Call in a CO2 particle.
-        this.debugWater(); // Call in a water particle.
-
-        if (this.debugKeys.wasCalledToggle.isDown && wasCalled == true) {
-            wasCalled = false; // Toggle wasCalled back to false.
-            console.log("wasCalled is now " + wasCalled);
+        // Generate CO2 and Water at random intervals of time (frames). 
+        updateDelayT++;
+        var randomC = (Math.floor(Math.random() * 10));
+        var randomW = (Math.floor(Math.random() * 10));
+        if (updateDelayT % (randomC * 60) == 0) {
+            this.CO2Supply(); // Call in CO2 or water after
         }
+        if (updateDelayT % (randomW * 60) == 0) {
+            this.waterSupply(); // a random amount of time has passed
+        }
+
+        // Debug
+        if (this.debugKeys.wasCalledToggle.isDown && wasCalledT == true) {
+            wasCalledT = false; // Toggle wasCalled back to false.
+            console.log("wasCalled is now " + wasCalledT);
+        }
+        this.debugNutrient(); // Call in a nutrient when conditions are met.
+
+        // Pull nutrient code
+        if ((this.nutrientIng.x != 40 || this.nutrientIng.y != 185) && itmatters == true) {
+            movedoff = true;
+            itmatters = false;
+        }
+        if (movedoff == true) {
+            Client.pullNutrient();
+            movedoff = false;
+        }
+
     },
 
     growingappleProperties: function () {
@@ -150,9 +175,9 @@ var treeState = {
     },
 
     debugNutrient: function () {
-        if (!wasCalled && this.debugKeys.nutBut.isDown) { // If wasCalled is false and the nutrient button is pressed, 
-            wasCalled = true; // set wasCalled to true to prevent the event from triggering a zillion times, and
-            console.log("wasCalled is now " + wasCalled); // print to the console the new value for wasCalled.
+        if (!wasCalledT && this.debugKeys.nutBut.isDown) { // If wasCalled is false and the nutrient button is pressed, 
+            wasCalledT = true; // set wasCalled to true to prevent the event from triggering a zillion times, and
+            console.log("wasCalled is now " + wasCalledT); // print to the console the new value for wasCalled.
 
             this.nutrientSupply();
         }
@@ -167,15 +192,6 @@ var treeState = {
         console.log("nutrientNo is " + nutrientNo);
     },
 
-    debugCO2: function () {
-        if (!wasCalled && this.debugKeys.CO2But.isDown) {
-            wasCalled = true;
-            console.log("wasCalled is now " + wasCalled);
-
-            this.CO2Supply();
-        }
-    },
-
     CO2Supply: function () {
         if (CO2No == 0) {
             this.buildCO2();
@@ -183,15 +199,6 @@ var treeState = {
         CO2No++;
         CO2NoText.text = CO2No.toString();
         console.log("CO2No is " + CO2No);
-    },
-
-    debugWater: function () {
-        if (!wasCalled && this.debugKeys.watBut.isDown) {
-            wasCalled = true;
-            console.log("wasCalled is now " + wasCalled);
-
-            this.waterSupply();
-        }
     },
 
     waterSupply: function () {
@@ -206,16 +213,19 @@ var treeState = {
     // NEW SPRITE CREATION BEGIN *** *** ***
     buildNutrient: function () {
         // Initialize nutrientIng.
-        this.nutrientIng = game.add.sprite(150, 150, 'nutrient'); // Add the sprite for the ingredient 'nutrient'
+        this.nutrientIng = game.add.sprite(40, 185, 'nutrient'); // Add the sprite for the ingredient 'nutrient'
         this.nutrientIng.anchor.setTo(0.5, 0.5); // The coordinates are for the center of the sprite.
         game.physics.arcade.enable(this.nutrientIng); // Give sprite a body.
         this.nutrientIng.inputEnabled = true; // Input Enable the sprite.
         this.nutrientIng.input.enableDrag(true); // Allow dragging - 'true' parameter makes the sprite snap to the center.
+        
+        movedoff = false;
+        itmatters = true;
     },
 
     buildCO2: function () {
         // Initialize CO2Ing.
-        this.CO2Ing = game.add.sprite(150, 150, 'CO2');
+        this.CO2Ing = game.add.sprite(40, 235, 'CO2');
         this.CO2Ing.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(this.CO2Ing);
         this.CO2Ing.inputEnabled = true;
@@ -224,7 +234,7 @@ var treeState = {
 
     buildWater: function () {
         // Initialize waterIng.
-        this.waterIng = game.add.sprite(150, 150, 'water');
+        this.waterIng = game.add.sprite(40, 285, 'water');
         this.waterIng.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(this.waterIng);
         this.waterIng.inputEnabled = true;
@@ -252,7 +262,7 @@ var treeState = {
     addCO2Ing: function (CO2Ing, growingapple) {
         CO2Ing.destroy();
         if (CO2No > 1) {
-            this.buildNutrient();
+            this.buildCO2();
         }
 
         snappedCIng = this.growingapple.addChild(game.make.sprite(-17, 8, 'CO2'));

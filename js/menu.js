@@ -73,30 +73,32 @@ var menuState = {
         this.treePlayer = tree;
         this.birdPlayer = bird;
         console.log("The players are now set equal to: " + worm + ", " + tree + ", " + bird);
-        
-        // If data comes back with a valid ID, don't let the new player choose that option.
-        if (this.wormPlayer >= 0) { 
-            this.wormx.visible = true;
-            this.wormbutton.inputEnabled = false;
-        } else {
-            this.wormx.visible = false;
-            this.wormbutton.inputEnabled = true;
-        }
 
-        if (this.treePlayer >= 0) {
-            this.treex.visible = true;
-            this.treebutton.inputEnabled = false;
-        } else {
-            this.treex.visible = false;
-            this.treebutton.inputEnabled = true;
-        }
+        if (this.wormbutton) { // If menu state is currently running...
+            // If data comes back with a valid ID, don't let the new player choose that option.
+            if (this.wormPlayer >= 0) {
+                this.wormx.visible = true;
+                this.wormbutton.inputEnabled = false;
+            } else {
+                this.wormx.visible = false;
+                this.wormbutton.inputEnabled = true;
+            }
 
-        if (this.birdPlayer >= 0) {
-            this.birdx.visible = true;
-            this.birdbutton.inputEnabled = false;
-        } else {
-            this.birdx.visible = false;
-            this.birdbutton.inputEnabled = true;
+            if (this.treePlayer >= 0) {
+                this.treex.visible = true;
+                this.treebutton.inputEnabled = false;
+            } else {
+                this.treex.visible = false;
+                this.treebutton.inputEnabled = true;
+            }
+
+            if (this.birdPlayer >= 0) {
+                this.birdx.visible = true;
+                this.birdbutton.inputEnabled = false;
+            } else {
+                this.birdx.visible = false;
+                this.birdbutton.inputEnabled = true;
+            }
         }
     },
 

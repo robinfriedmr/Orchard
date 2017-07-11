@@ -4,9 +4,9 @@
 
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
-var worm, apple, nutrient,
+var worm, decay, nutrient,
     squareSize, speed, collisionCounter,
-    updateDelay, direction, new_direction;
+    updateDelayW, direction, new_direction;
 
 var wormState = {
 
@@ -35,12 +35,12 @@ var wormState = {
         });
 
         worm = []; // This will work as a stack, containing the parts of our worm
-        apple = {}; // An object for the apple;
-        nutrient = {}; // An object for the nutrient***.
+        decay = {}; // An object for the decay;
+        nutrient = {}; // An object for the nutrient so that it's defined.
         squareSize = 15; // The length of a side of the squares. Our image is 15x15 pixels.
         speed = 0; // Game speed.
         collisionCounter = 0; // Number of times collided with self or wall.
-        updateDelay = 0; // A variable for control over update rates.
+        updateDelayW = 0; // A variable for control over update rates.
         direction = 'right'; // The direction of our worm.
         new_direction = null; // A buffer to store the new direction into.
 
@@ -49,8 +49,11 @@ var wormState = {
             worm[i] = game.add.sprite(150 + i * squareSize, 150, 'wormsquare');
         }
 
-        // Genereate the first apple.
-        this.generateApple();
+        // Genereate the first decay.
+        this.newDecay();
+
+        // A place the nutrient sprites are held.
+        this.nutrientArray = [];
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -92,19 +95,20 @@ var wormState = {
         speed = Math.min(10, collisionCounter); // Modulate speed based on the collision counter.
 
         // Run this code every 10 (to 20) runs through "update"
-        updateDelay++;
-        if (updateDelay % (10 + speed) == 0) {
+        updateDelayW++;
+        if (updateDelayW % (10 + speed) == 0) {
             // Worm movement
             var firstCell = worm[worm.length - 1],
                 lastCell = worm.shift(),
                 oldLastCellx = lastCell.x,
                 oldLastCelly = lastCell.y;
 
-            // Check for collision with wall. Parameter is the head of the worm. ***TRYING TO GET THIS TO ACTUALLY MAKE THE WORM CHANGE DIRECTION. ***
+            // Check for collision with wall. Parameter is the head of the worm.
             this.wallCollision(firstCell);
 
-            // Check for apple collision.
-            this.appleCollision();
+            // Check for decay collision.
+            this.decayCollision(firstCell);
+            
             // Check for collision with self. Parameter is the head of the worm.
             this.selfCollision(firstCell);
 
@@ -137,7 +141,7 @@ var wormState = {
         firstCell = lastCell; // Mark it the first cell.
     },
 
-    wallCollision: function (head) {        
+    wallCollision: function (head) {
         if (direction == 'right' && head.x == (game.width - squareSize)) {
             new_direction = 'up';
             collisionCounter++;
@@ -157,38 +161,46 @@ var wormState = {
         }
     },
 
-
-    generateApple: function () {
+    newDecay: function () {
         // Chose a random place on the grid.
-        var randomX = (Math.floor(Math.random() * 37) * squareSize) + squareSize,
-            randomY = (Math.floor(Math.random() * 20) * squareSize) + squareSize;
+        var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
+            randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
 
-        // Add a new apple.
-        apple = game.add.sprite(randomX, randomY, 'applesquare');
+        // Add a new decay.
+        this.decay = game.add.sprite(randomX, randomY, 'decay');
     },
 
-    appleCollision: function () {
+    eraseNutrient: function () {
+        console.log(this.nutrientArray.length);
+        //console.log("A nutrient is erased.");
 
-        // Check if any part of the worm is overlapping the apple.
-        for (var i = 0; i < worm.length; i++) {
-            if (worm[i].x == apple.x && worm[i].y == apple.y) {
+        which = birdState.getRandomInt(0, this.nutrientArray.length);
+        this.nutrientArray.splice(which - 1, 1);
 
-                // Put in a nutrient where the apple is.
-                game.add.sprite(apple.x, apple.y, 'nutrient');
-                // Send a nutrient to the server.
-                Client.sendNutrient();
+        console.log(this.nutrientArray.length);
+    },
 
-                // Destroy the old apple.
-                apple.destroy();
-                // Make a new one.
-                this.generateApple();
+    decayCollision: function (firstCell) {
+        // Check if the head is colliding with the decay. (Changed from a for loop into just the head.) 
+        if (firstCell.x == this.decay.x && firstCell.y == this.decay.y) {
+            
+            // Put in a nutrient where the decay is.
+            nutrient = game.add.sprite(this.decay.x, this.decay.y, 'nutrient'); // *****
+            
+            // Add to array
+            this.nutrientArray.push(nutrient);
+            // Send a nutrient to the server.
+            Client.sendNutrient();
 
-                if (collisionCounter > 0) {
-                    collisionCounter--;
-                    console.log(collisionCounter);
-                }
+            // Destroy the old decay.
+            this.decay.destroy(); // DOESN'T DESTROY
+
+            if (collisionCounter > 0) {
+                collisionCounter--;
+                console.log(collisionCounter);
             }
         }
+
     },
 
     selfCollision: function (head) {
