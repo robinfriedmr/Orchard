@@ -7,24 +7,26 @@ this.myPlayerID = -1;
 
 var menuState = {
     create: function () {
-        // Spacebar and arrow key press is captured by the game, not the browser window.
-        game.input.keyboard.addKeyCapture([Phaser.Keyboard.UP, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.SPACEBAR]);
 
-        //Allow arrow key inputs
-        this.cursor = game.input.keyboard.createCursorKeys();
-        //Allow spacebar input. Make spacebar press start game.
-        var spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-
-        // If the device is mobile, a finger touch can make the game start.
         if (!game.device.desktop) {
-            game.input.onDown.add(this.start, this);
+            // Create an empty label to write the error message if needed
+            this.rotateLabel = game.add.text(game.width / 2, game.height / 2, '', {
+                font: '30px Arial',
+                fill: '#fff',
+                backgroundColor: '#000'
+            });
+            this.rotateLabel.anchor.setTo(0.5, 0.5);
+            // Call 'orientationChange' when the device is rotated
+            game.scale.onOrientationChange.add(this.orientationChange, this);
+            // Call the function at least once
+            this.orientationChange();
         }
 
+        // Display the name of the game
         var styleTitle = {
             font: '50px Arial',
             fill: '#ffffff'
         };
-        // Display the name of the game
         var nameLabel = game.add.text(game.width / 2, 50, "Orchard", styleTitle);
         nameLabel.anchor.setTo(0.5, 0.5);
 
@@ -35,7 +37,6 @@ var menuState = {
         } else {
             text = 'tap a level to start';
         }
-        // Display the Text
         var startLabel = game.add.text(game.width / 2, game.height - 60,
             text, {
                 font: '25px Arial',
@@ -43,16 +44,16 @@ var menuState = {
             });
         startLabel.anchor.setTo(0.5, 0.5);
 
-        this.wormbutton = game.add.button(150, game.height / 2, 'wormbutton', this.askWorm);
-        this.wormx = game.add.sprite(150, game.height / 2, 'x');
+        this.wormbutton = game.add.button(game.width/2 - 150, game.height / 2 - 25, 'wormbutton', this.askWorm);
+        this.wormx = game.add.sprite(game.width/2 - 150, game.height / 2 - 25, 'x');
         this.wormx.visible = false;
 
-        this.treebutton = game.add.button(250, game.height / 2, 'treebutton', this.askTree);
-        this.treex = game.add.sprite(250, game.height / 2, 'x');
+        this.treebutton = game.add.button(game.width/2 - 25, game.height / 2 - 25, 'treebutton', this.askTree);
+        this.treex = game.add.sprite(game.width/2 - 25, game.height / 2 - 25, 'x');
         this.treex.visible = false;
 
-        this.birdbutton = game.add.button(350, game.height / 2, 'birdbutton', this.askBird);
-        this.birdx = game.add.sprite(350, game.height / 2, 'x');
+        this.birdbutton = game.add.button(game.width/2 + 100, game.height / 2 - 25, 'birdbutton', this.askBird);
+        this.birdx = game.add.sprite(game.width/2 + 100, game.height / 2 - 25, 'x');
         this.birdx.visible = false;
 
         // Ask server to create an ID for you.
@@ -151,5 +152,21 @@ var menuState = {
         this.birdPlayer = id;
         this.birdx.visible = true;
         this.birdbutton.inputEnabled = false;
+    },
+
+    // MOBILE-ONLY FUNCTIONS
+    orientationChange: function () {
+        // If the game is in portrait (wrong orientation)
+        if (game.scale.isPortrait) {
+            // Pause the game and add a text explanation
+            game.paused = true;
+            this.rotateLabel.text = 'Rotate to landscape';
+        }
+        // If the game is in landscape (good orientation)
+        else {
+            // Resume the game and remove the text
+            game.paused = false;
+            this.rotateLabel.text = '';
+        }
     },
 };

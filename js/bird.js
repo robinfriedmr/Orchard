@@ -5,31 +5,30 @@ var birdState = {
 
     create: function () {
 
+        // Add inputs.
         this.cursor = game.input.keyboard.createCursorKeys();
-
         this.debugAppleDrop = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         this.poopButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
         this.wasCalledToggle = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
+        // Create object for fallingApple so that it's defined.
         this.fallingApple = {};
 
-        // Pooped seed emitter
-        this.emitter = game.add.emitter(50, 50, 80);
-        this.emitter.makeParticles('bird');
-        this.emitter.gravity = 500;
-        this.emitter.start(true, 1000, null, 8, 8);
-        
-        var image = game.add.image(game.width/2, game.height/2, 'seeds'); // Not showing up.
-
-        // Add background and map (eventually) 
+        // Add background. 
         this.createWorld();
 
+        // Add score label.
         birdState.bScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
             font: '24px Arial',
             fill: '#ffffff'
         });
 
-        // Add sprites to the game
+        // Add pooped seed emitter.
+        this.emitter = game.add.emitter(55, 55, 10);
+        this.emitter.makeParticles('seeds');
+        this.emitter.gravity = 555;
+
+        // Add sprites to the game.
         this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
         this.birdplayer.anchor.setTo(0.5, 0.5);
 
@@ -38,15 +37,13 @@ var birdState = {
         this.birdplayer.body.gravity.y = 1000;
         this.birdplayer.body.collideWorldBounds = true;
 
-        // When the mouse is clicked or the screen is tapped, play jump.
-        // this.bg.events.onInputDown.add(this.jump, this);
-
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
             [Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,
              Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT,
              Phaser.Keyboard.SPACEBAR]);
 
+        // If the device is mobile, also execute these:
         if (!game.device.desktop) {
             // Create an empty label to write the error message if needed
             this.rotateLabel = game.add.text(game.width / 2, game.height / 2, '', {
@@ -59,6 +56,8 @@ var birdState = {
             game.scale.onOrientationChange.add(this.orientationChange, this);
             // Call the function at least once
             this.orientationChange();
+            
+            this.addMobileInputs();
         }
     },
 
@@ -84,25 +83,20 @@ var birdState = {
             }
         }
 
-        // *************************
+        // Destroy the apple if it's still alive but out of range.
         if (this.fallingApple.alive == true) {
             if (this.fallingApple.y > game.height + 40) {
                 this.destroyFallenApple();
             }
         }
-        
+
         this.propagate();
         this.movePlayer();
     },
 
     destroyFallenApple: function () {
-
         this.fallingApple.alive = false;
         this.fallingApple.destroy();
-        //        console.log(this.fallingApple.destroyPhase);
-
-        console.log(this.fallingApple); // *********
-
 
         Client.sendDecay();
     },
@@ -111,8 +105,8 @@ var birdState = {
         console.log("An apple is dropped.");
         this.fallingApple = game.add.sprite(this.getRandomInt(50, game.width - 50), 0, 'growingapple');
         this.fallingApple.anchor.setTo(0.5, 0.5);
-        //this.fallingApple.body.setCircle(37.5);
         game.physics.arcade.enable(this.fallingApple, Phaser.Physics.ARCADE);
+        this.fallingApple.body.setCircle(37.5);
     },
 
     getRandomInt: function (min, max) {
@@ -141,13 +135,9 @@ var birdState = {
         appleEaten = false;
 
         this.emitter.x = x;
-        this.emitter.y = y;
+        this.emitter.y = y + 50;
 
-        this.emitter.start(true, 1000, null, 8, 8);
-        this.emitter.on = true;
-        
-        console.log(this.emitter.x + ", " + this.emitter.y + " is the emitter.");
-        console.log(this.emitter.on); // this is returning false?
+        this.emitter.start(true, 1000, null, 10);
 
         Client.sendSeed(this.birdplayer.x);
     },
@@ -159,14 +149,6 @@ var birdState = {
     updateScore: function (bScore) {
         if (birdState.bScoreLabel) {
             birdState.bScoreLabel.setText('trees planted: ' + bScore);
-        }
-    },
-
-    debugDrop: function () {
-        if (!wasCalled && this.debugAppleDrop.isDown && appleEaten == false) {
-            wasCalled = true;
-            console.log("wasCalled is now " + wasCalled);
-            this.appleDrop();
         }
     },
 
@@ -239,9 +221,6 @@ var birdState = {
                     angle: 0
                 }, 100).start();
             }
-
-            //this.player.animations.stop(); //Cease any animation
-            //this.player.frame = 0; // Change frame (to stand still)
         }
     },
 
@@ -249,52 +228,20 @@ var birdState = {
         game.state.start('menu');
     },
 
+    debugDrop: function () {
+        if (!wasCalled && this.debugAppleDrop.isDown && appleEaten == false) {
+            wasCalled = true;
+            console.log("wasCalled is now " + wasCalled);
+            this.appleDrop();
+        }
+    },
+
+
     // ****************** MOBILE FUNCTIONS *****************
     addMobileInputs: function () {
-        //        // Add the jump button
-        //        var jumpButton = game.add.sprite(350, 240, 'jumpButton');
-        //        jumpButton.inputEnabled = true;
-        //        jumpButton.alpha = 0.5;
-        //        // Call 'jumpPlayer' when the 'jumpButton' is pressed
-        //        jumpButton.events.onInputDown.add(this.jumpPlayer, this);
 
-        this.moveLeft = false;
-        this.moveRight = false;
+        // this.bg.events.onInputDown.add(this.jump, this);
 
-        // Add the move left button
-        var leftButton = game.add.sprite(50, 240, 'leftButton');
-        leftButton.inputEnabled = true;
-        leftButton.alpha = 0.5;
-        // If the curser is Over or Down on this sprite, set moveLeft to true. 
-        leftButton.events.onInputOver.add(this.setLeftTrue, this);
-        leftButton.events.onInputOut.add(this.setLeftFalse, this);
-        leftButton.events.onInputDown.add(this.setLeftTrue, this);
-        leftButton.events.onInputUp.add(this.setLeftFalse, this);
-
-
-        // Add the move right button
-        var rightButton = game.add.sprite(130, 240, 'rightButton');
-        rightButton.inputEnabled = true;
-        rightButton.alpha = 0.5;
-        rightButton.events.onInputOver.add(this.setRightTrue, this);
-        rightButton.events.onInputOut.add(this.setRightFalse, this);
-        rightButton.events.onInputDown.add(this.setRightTrue, this);
-        rightButton.events.onInputUp.add(this.setRightFalse, this);
-
-    },
-
-    // This set of functions relates to the mobile input buttons.
-    setLeftTrue: function () {
-        this.moveLeft = true;
-    },
-    setLeftFalse: function () {
-        this.moveLeft = false;
-    },
-    setRightTrue: function () {
-        this.moveRight = true;
-    },
-    setRightFalse: function () {
-        this.moveRight = false;
     },
 
     orientationChange: function () {
@@ -311,5 +258,4 @@ var birdState = {
             this.rotateLabel.text = '';
         }
     },
-
 };
