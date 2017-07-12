@@ -30,6 +30,7 @@ var birdState = {
 
         // Add sprites to the game.
         this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
+        this.birdplayer.frame = 1;
         this.birdplayer.anchor.setTo(0.5, 0.5);
 
         // Enable physics on the sprites' bodies.
@@ -118,6 +119,7 @@ var birdState = {
     eatApple: function () {
         if (appleEaten == false) {
             this.fallingApple.destroy();
+            this.birdplayer.frame = 0;
             console.log("The apple is eaten");
             appleEaten = true;
         }
@@ -132,6 +134,7 @@ var birdState = {
     },
 
     dump: function (x, y) {
+        this.birdplayer.frame = 1;
         appleEaten = false;
 
         this.emitter.x = x;
@@ -139,6 +142,7 @@ var birdState = {
 
         this.emitter.start(true, 1000, null, 10);
 
+        Client.sendDecay("ten");
         Client.sendSeed(this.birdplayer.x);
     },
 

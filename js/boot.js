@@ -22,28 +22,12 @@ var bootState = {
         game.load.image('CO2', 'assets/img/CO2.png');
         game.load.image('growingapple', 'assets/img/growingapple.png');
         
-        game.load.image('bird', 'assets/img/bird.png');
+        game.load.spritesheet('bird', 'assets/img/bird.png', 50, 60);
         game.load.image('seeds', 'assets/img/seeds.png');
-
-
-//        game.load.image('sunplayer', 'assets/sunplayer.png');
-//        game.load.image('waterplayer', 'assets/waterplayer.png');
-//        game.load.image('smwater', 'assets/smwater.png');
-//        game.load.image('dirtplayer', 'assets/dirtplayer.png');
-//        game.load.image('smdirt', 'assets/smdirt.png');
-//
-//        game.load.image('nutrient', 'assets/nutrient.png');
-//        game.load.image('goal', 'assets/goal.png');
-
-
-//        game.load.image('upButton', 'assets/upButton.png');
-//        game.load.image('rightButton', 'assets/rightButton.png');
-//        game.load.image('leftButton', 'assets/leftButton.png');
 
         //Tiles is universal. Dmap is for the dirt level.
 //        game.load.image('tiles', 'assets/tiles.png');
 //        game.load.tilemap('dmap', 'assets/dmap.json', null, Phaser.Tilemap.TILED_JSON);
-//        game.load.tilemap('wmap', 'assets/wmap.json', null, Phaser.Tilemap.TILED_JSON);
 
     },
     
@@ -64,7 +48,6 @@ var bootState = {
             // Center the game on the screen
             game.scale.pageAlignHorizontally = true;
             game.scale.pageAlignVertically = true;
-            // Add a blue color to the page to hide potential white borders
             document.body.style.backgroundColor = '#4ECF3E';
         }
 

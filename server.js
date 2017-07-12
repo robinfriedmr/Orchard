@@ -130,10 +130,10 @@ io.on('connection', function (socket) {
             }
         });
         
-        socket.on('sendDecay', function () {
+        socket.on('sendDecay', function (ten) {
             console.log("server has the bird's decaying apple"); 
             if (playerMap[WORM_GAME] != -1) {
-                socket.to(playerMap[WORM_GAME]).emit('receiveDecay');
+                socket.to(playerMap[WORM_GAME]).emit('receiveDecay', ten);
             }
         });
 

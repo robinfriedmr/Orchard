@@ -4,7 +4,7 @@
 
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
-var worm, decay, nutrient,
+var worm, decay, nutrient, ten
     squareSize, speed, collisionCounter,
     updateDelayW, direction, new_direction;
 
@@ -34,9 +34,10 @@ var wormState = {
             fill: '#ffffff'
         });
 
+        ten = false; // SHOOT ME PLEASE
         worm = []; // This will work as a stack, containing the parts of our worm
-        decay = {}; // An object for the decay;
-        nutrient = {}; // An object for the nutrient so that it's defined.
+        decay = []; // An array for the decay. (WAS AN OBJECT)
+        nutrient = []; // An array for the nutrient. (WAS AN OBJECT)
         squareSize = 15; // The length of a side of the squares. Our image is 15x15 pixels.
         speed = 0; // Game speed.
         collisionCounter = 0; // Number of times collided with self or wall.
@@ -52,8 +53,8 @@ var wormState = {
         // Genereate the first decay.
         this.newDecay();
 
-        // A place the nutrient sprites are held.
-        this.nutrientArray = [];
+        //        // A place the nutrient sprites are held.
+        //        this.nutrientArray = [];
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -78,9 +79,8 @@ var wormState = {
     },
 
     update: function () {
-        // Collisions should always go at the top of the Update function.
 
-        // Use the arrow keys to determine the new direction, while preventing illegal directions.
+        // Use the arrow keys to determine the worm's new direction, while preventing illegal directions.
         if (this.cursor.right.isDown && direction != 'left') {
             new_direction = 'right';
         } else if (this.cursor.left.isDown && direction != 'right') {
@@ -106,11 +106,11 @@ var wormState = {
             // Check for collision with wall. Parameter is the head of the worm.
             this.wallCollision(firstCell);
 
-            // Check for decay collision.
-            this.decayCollision(firstCell);
-            
             // Check for collision with self. Parameter is the head of the worm.
             this.selfCollision(firstCell);
+
+            // Check for decay collision. Paramater is the head of the worm.
+            this.decayCollision(firstCell);
 
             // If a new direction has been chosen from the keyboard, make it the direction of the worm now.
             if (new_direction) {
@@ -161,13 +161,47 @@ var wormState = {
         }
     },
 
-    newDecay: function () {
-        // Chose a random place on the grid.
-        var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
-            randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
+    newDecay: function (ten) {
 
-        // Add a new decay.
-        this.decay = game.add.sprite(randomX, randomY, 'decay');
+        if (ten == true) {
+            for (i = 0; i < 10; i++) {
+                var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
+                    randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
+
+                decaySprite = game.add.sprite(randomX, randomY, 'decay');
+                decay.push(decaySprite);
+            }
+        } else {
+            // Chose a random place on the grid.
+            var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
+                randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
+
+            // Add a new decay.
+            decaySprite = game.add.sprite(randomX, randomY, 'decay');
+            decay.push(decaySprite);
+        }
+    },
+
+    decayCollision: function (firstCell) {
+        // Check if the head is colliding with the decay. (Changed from a for loop into just the head.) 
+        if (firstCell.x == decaySprite.x && firstCell.y == decaySprite.y) {
+
+            // Put in a nutrient where the decay is.
+            nutrientSprite = game.add.sprite(decaySprite.x, decaySprite.y, 'nutrient');
+            nutrient.push(nutrientSprite);
+
+            // Send a nutrient to the server.
+            Client.sendNutrient();
+
+            // Destroy the old decay.
+            decaySprite.destroy(); // DOESN'T DESTROY
+
+            if (collisionCounter > 0) {
+                collisionCounter--;
+                console.log(collisionCounter);
+            }
+        }
+
     },
 
     eraseNutrient: function () {
@@ -178,29 +212,6 @@ var wormState = {
         this.nutrientArray.splice(which - 1, 1);
 
         console.log(this.nutrientArray.length);
-    },
-
-    decayCollision: function (firstCell) {
-        // Check if the head is colliding with the decay. (Changed from a for loop into just the head.) 
-        if (firstCell.x == this.decay.x && firstCell.y == this.decay.y) {
-            
-            // Put in a nutrient where the decay is.
-            nutrient = game.add.sprite(this.decay.x, this.decay.y, 'nutrient'); // *****
-            
-            // Add to array
-            this.nutrientArray.push(nutrient);
-            // Send a nutrient to the server.
-            Client.sendNutrient();
-
-            // Destroy the old decay.
-            this.decay.destroy(); // DOESN'T DESTROY
-
-            if (collisionCounter > 0) {
-                collisionCounter--;
-                console.log(collisionCounter);
-            }
-        }
-
     },
 
     selfCollision: function (head) {
