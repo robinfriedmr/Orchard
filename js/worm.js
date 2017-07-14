@@ -4,9 +4,9 @@
 
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
-var worm, decay, nutrient, ten
-    squareSize, speed, collisionCounter,
-    updateDelayW, direction, new_direction;
+var worm, decay, nutrient,
+squareSize, speed, collisionCounter,
+updateDelayW, direction, new_direction;
 
 var wormState = {
 
@@ -34,7 +34,7 @@ var wormState = {
             fill: '#ffffff'
         });
 
-        ten = false; // SHOOT ME PLEASE
+        //ten = false; 
         worm = []; // This will work as a stack, containing the parts of our worm
         decay = []; // An array for the decay. (WAS AN OBJECT)
         nutrient = []; // An array for the nutrient. (WAS AN OBJECT)
@@ -161,25 +161,14 @@ var wormState = {
         }
     },
 
-    newDecay: function (ten) {
+    newDecay: function () {
+        // Chose a random place on the grid.
+        var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
+            randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
 
-        if (ten == true) {
-            for (i = 0; i < 10; i++) {
-                var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
-                    randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
-
-                decaySprite = game.add.sprite(randomX, randomY, 'decay');
-                decay.push(decaySprite);
-            }
-        } else {
-            // Chose a random place on the grid.
-            var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
-                randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
-
-            // Add a new decay.
-            decaySprite = game.add.sprite(randomX, randomY, 'decay');
-            decay.push(decaySprite);
-        }
+        // Add a new decay.
+        decaySprite = game.add.sprite(randomX, randomY, 'decay');
+        decay.push(decaySprite);
     },
 
     decayCollision: function (firstCell) {

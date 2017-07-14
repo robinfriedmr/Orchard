@@ -32,7 +32,7 @@ Client.sendApple = function () {
     Client.socket.emit('sendApple');  
 };
 
-Client.sendDecay = function (ten) {
+Client.sendDecay = function () {
     Client.socket.emit('sendDecay');  
 };
 
@@ -65,8 +65,8 @@ Client.socket.on('receiveApple', function () {
     birdState.appleDrop();
 });
 
-Client.socket.on('receiveDecay', function (ten) {
-    wormState.newDecay(ten); 
+Client.socket.on('receiveDecay', function () {
+    wormState.newDecay(); 
 });
 
 Client.socket.on('plantSeed', function (seedX) {
