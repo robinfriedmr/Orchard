@@ -142,7 +142,7 @@ var birdState = {
 
         this.emitter.start(true, 1000, null, 10);
 
-        Client.sendDecay("ten");
+        Client.sendDecay(8);
         Client.sendSeed(this.birdplayer.x);
     },
 

@@ -5,8 +5,10 @@
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
 var worm, decay, nutrient,
-squareSize, speed, collisionCounter,
-updateDelayW, direction, new_direction;
+    speed, collisionCounter,
+    updateDelayW, direction, new_direction;
+
+const SQUARESIZE = 15;
 
 var wormState = {
 
@@ -16,14 +18,8 @@ var wormState = {
             this.addMobileInputs();
         }
 
-        // Arrow and WASD keys
+        // Arrow and space keys
         this.cursor = game.input.keyboard.createCursorKeys();
-        this.wasd = {
-            up: game.input.keyboard.addKey(Phaser.Keyboard.W),
-            down: game.input.keyboard.addKey(Phaser.Keyboard.S),
-            left: game.input.keyboard.addKey(Phaser.Keyboard.A),
-            right: game.input.keyboard.addKey(Phaser.Keyboard.D)
-        };
         this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         // Add map 
@@ -34,11 +30,9 @@ var wormState = {
             fill: '#ffffff'
         });
 
-        //ten = false; 
         worm = []; // This will work as a stack, containing the parts of our worm
-        decay = []; // An array for the decay. (WAS AN OBJECT)
-        nutrient = []; // An array for the nutrient. (WAS AN OBJECT)
-        squareSize = 15; // The length of a side of the squares. Our image is 15x15 pixels.
+        decay = []; // An array for the decay.
+        nutrient = []; // An array for the nutrient.
         speed = 0; // Game speed.
         collisionCounter = 0; // Number of times collided with self or wall.
         updateDelayW = 0; // A variable for control over update rates.
@@ -47,16 +41,14 @@ var wormState = {
 
         // Add sprites to the game
         for (var i = 0; i < 10; i++) {
-            worm[i] = game.add.sprite(150 + i * squareSize, 150, 'wormsquare');
+            worm[i] = game.add.sprite(150 + i * SQUARESIZE, 150, 'wormsquare');
         }
 
-        // Genereate the first decay.
-        this.newDecay();
+        // Genereate the first three pieces of decay.
+        this.newDecay(3);
+        console.log(decay.length);
 
-        //        // A place the nutrient sprites are held.
-        //        this.nutrientArray = [];
-
-        // The arrow keys will only ever affect the game, not the browswer window.
+        // The arrow keys and spacebar will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
             [Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,
              Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT,
@@ -103,21 +95,16 @@ var wormState = {
                 oldLastCellx = lastCell.x,
                 oldLastCelly = lastCell.y;
 
-            // Check for collision with wall. Parameter is the head of the worm.
+            // Check for collisions. Parameter is the head of the worm.
             this.wallCollision(firstCell);
-
-            // Check for collision with self. Parameter is the head of the worm.
             this.selfCollision(firstCell);
-
-            // Check for decay collision. Paramater is the head of the worm.
             this.decayCollision(firstCell);
 
-            // If a new direction has been chosen from the keyboard, make it the direction of the worm now.
+            // If a new direction has been chosen from the keyboard, make it the direction of the worm now. Move that way.
             if (new_direction) {
                 direction = new_direction;
                 new_direction = null;
             }
-
             this.wormMovement(lastCell, firstCell);
         }
     },
@@ -125,24 +112,24 @@ var wormState = {
     wormMovement: function (lastCell, firstCell) {
         // Change the last cell's coordinates relative to the head of the worm, according to the direction.
         if (direction == 'right') {
-            lastCell.x = firstCell.x + squareSize;
+            lastCell.x = firstCell.x + SQUARESIZE;
             lastCell.y = firstCell.y;
         } else if (direction == 'left') {
-            lastCell.x = firstCell.x - squareSize;
+            lastCell.x = firstCell.x - SQUARESIZE;
             lastCell.y = firstCell.y;
         } else if (direction == 'up') {
             lastCell.x = firstCell.x;
-            lastCell.y = firstCell.y - squareSize;
+            lastCell.y = firstCell.y - SQUARESIZE;
         } else if (direction == 'down') {
             lastCell.x = firstCell.x;
-            lastCell.y = firstCell.y + squareSize;
+            lastCell.y = firstCell.y + SQUARESIZE;
         }
         worm.push(lastCell); // Place the last cell in the front of the stack.
         firstCell = lastCell; // Mark it the first cell.
     },
 
     wallCollision: function (head) {
-        if (direction == 'right' && head.x == (game.width - squareSize)) {
+        if (direction == 'right' && head.x == (game.width - SQUARESIZE)) {
             new_direction = 'up';
             collisionCounter++;
             console.log(collisionCounter);
@@ -154,53 +141,11 @@ var wormState = {
             new_direction = 'left';
             collisionCounter++;
             console.log(collisionCounter);
-        } else if (direction == 'down' && head.y == (game.height - squareSize)) {
+        } else if (direction == 'down' && head.y == (game.height - SQUARESIZE)) {
             new_direction = 'right';
             collisionCounter++;
             console.log(collisionCounter);
         }
-    },
-
-    newDecay: function () {
-        // Chose a random place on the grid.
-        var randomX = (Math.floor(Math.random() * 38) * squareSize) + squareSize,
-            randomY = (Math.floor(Math.random() * 21) * squareSize) + squareSize;
-
-        // Add a new decay.
-        decaySprite = game.add.sprite(randomX, randomY, 'decay');
-        decay.push(decaySprite);
-    },
-
-    decayCollision: function (firstCell) {
-        // Check if the head is colliding with the decay. (Changed from a for loop into just the head.) 
-        if (firstCell.x == decaySprite.x && firstCell.y == decaySprite.y) {
-
-            // Put in a nutrient where the decay is.
-            nutrientSprite = game.add.sprite(decaySprite.x, decaySprite.y, 'nutrient');
-            nutrient.push(nutrientSprite);
-
-            // Send a nutrient to the server.
-            Client.sendNutrient();
-
-            // Destroy the old decay.
-            decaySprite.destroy(); // DOESN'T DESTROY
-
-            if (collisionCounter > 0) {
-                collisionCounter--;
-                console.log(collisionCounter);
-            }
-        }
-
-    },
-
-    eraseNutrient: function () {
-        console.log(this.nutrientArray.length);
-        //console.log("A nutrient is erased.");
-
-        which = birdState.getRandomInt(0, this.nutrientArray.length);
-        this.nutrientArray.splice(which - 1, 1);
-
-        console.log(this.nutrientArray.length);
     },
 
     selfCollision: function (head) {
@@ -213,18 +158,57 @@ var wormState = {
         }
     },
 
+    newDecay: function (number) {
+        for (i = 0; i < number; i++) {
+            // Choose a random place on the grid.
+            var randomX = (Math.floor(Math.random() * 38) * SQUARESIZE) + SQUARESIZE,
+                randomY = (Math.floor(Math.random() * 21) * SQUARESIZE) + SQUARESIZE;
+
+            // Add a new decay.
+            decaySprite = game.add.sprite(randomX, randomY, 'decay');
+            decay.push(decaySprite);
+        }
+    },
+
+    decayCollision: function (firstCell) {
+        // Check if the head is colliding with the decay. (Changed from a for loop into just the head.) 
+        if (firstCell.x == decaySprite.x && firstCell.y == decaySprite.y) {
+
+            // Destroy the old decay.
+            // *** NEEDS TO BE REMOVED FROM ARRAY AS WELL ***
+            decaySprite.destroy();
+
+            // Send a nutrient to the server.
+            Client.sendNutrient();
+
+            if (collisionCounter > 0) {
+                collisionCounter--;
+                console.log(collisionCounter);
+            }
+
+            console.log(decay.length);
+        }
+    },
+
+    eraseNutrient: function () {
+        console.log(this.nutrientArray.length);
+        //console.log("A nutrient is erased.");
+
+        which = birdState.getRandomInt(0, this.nutrientArray.length);
+        this.nutrientArray.splice(which - 1, 1);
+
+        console.log(this.nutrientArray.length);
+    },
+
     createWorld: function () {
         game.add.image(0, 0, 'wormBG');
 
-        //        // Create the tilemap
         //        this.map = game.add.tilemap('dmap');
-        //        // Add the tileset to the map
         //        this.map.addTilesetImage('tiles');
-        //        // Create the layer by specifying the name of the Tiled layer
         //        this.layer = this.map.createLayer('Tile Layer 1');
-        //
-        //        // Set the world size to match the size of the layer
+
         //        this.layer.resizeWorld();
+
         //        // Enable collisions for the XX'th tilset elements (dark worm, roots, worms)
         //        this.map.setCollision();
     },
@@ -235,89 +219,7 @@ var wormState = {
         }
     },
 
-
-    //    movePlayer: function () {
-    //        // If 0 fingers are touching the screen
-    //        if (game.input.totalActivePointers == 0) {
-    //            // Make sure the player is not moving
-    //            this.moveLeft = false;
-    //            this.moveRight = false;
-    //        }
-    //
-    //        // Moving conditions
-    //        if (this.cursor.left.isDown || this.wasd.left.isDown || this.moveLeft) {
-    //            this.wormplayer.body.velocity.x = -200;
-    //            this.checkLoc();
-    //        } else if (this.cursor.right.isDown || this.wasd.right.isDown || this.moveRight) {
-    //            this.wormplayer.body.velocity.x = 200;
-    //            this.checkLoc();
-    //        } else if (this.cursor.down.isDown || this.wasd.down.isDown || this.moveDown) {
-    //            this.wormplayer.body.velocity.y = 200;
-    //            this.checkLoc();
-    //        } else if (this.cursor.up.isDown || this.wasd.up.isDown || this.moveUp) {
-    //            this.wormplayer.body.velocity.y = -200;
-    //            this.checkLoc();
-    //        } else {
-    //            // Stop the player
-    //            this.wormplayer.body.velocity.x = 0;
-    //            this.wormplayer.body.velocity.y = 0;
-    //            //this.wormplayer.animations.stop(); //Cease any animation
-    //            //this.wormplayer.frame = 0; // Change frame (to stand still)
-    //        }
-    //    },
-
-    //    startMenu: function () {
-    //        game.state.start('menu');
-    //    },
-
     // ****************** MOBILE FUNCTIONS *****************
-    //    addMobileInputs: function () {
-    //        // Add the jump button
-    //        //        var jumpButton = game.add.sprite(350, 240, 'jumpButton');
-    //        //        jumpButton.inputEnabled = true;
-    //        //        jumpButton.alpha = 0.5;
-    //        //        // Call 'jumpPlayer' when the 'jumpButton' is pressed
-    //        //        jumpButton.events.onInputDown.add(this.jumpPlayer, this);
-    //
-    //        this.moveLeft = false;
-    //        this.moveRight = false;
-    //
-    //        // Add the move left button
-    //        var leftButton = game.add.sprite(50, 240, 'leftButton');
-    //        leftButton.inputEnabled = true;
-    //        leftButton.alpha = 0.5;
-    //        // If the curser is Over or Down on this sprite, set moveLeft to true. 
-    //        leftButton.events.onInputOver.add(this.setLeftTrue, this);
-    //        leftButton.events.onInputOut.add(this.setLeftFalse, this);
-    //        leftButton.events.onInputDown.add(this.setLeftTrue, this);
-    //        leftButton.events.onInputUp.add(this.setLeftFalse, this);
-    //
-    //
-    //        // Add the move right button
-    //        var rightButton = game.add.sprite(130, 240, 'rightButton');
-    //        rightButton.inputEnabled = true;
-    //        rightButton.alpha = 0.5;
-    //        rightButton.events.onInputOver.add(this.setRightTrue, this);
-    //        rightButton.events.onInputOut.add(this.setRightFalse, this);
-    //        rightButton.events.onInputDown.add(this.setRightTrue, this);
-    //        rightButton.events.onInputUp.add(this.setRightFalse, this);
-    //
-    //    },
-    //
-    //    // This set of functions relates to the mobile input buttons.
-    //    setLeftTrue: function () {
-    //        this.moveLeft = true;
-    //    },
-    //    setLeftFalse: function () {
-    //        this.moveLeft = false;
-    //    },
-    //    setRightTrue: function () {
-    //        this.moveRight = true;
-    //    },
-    //    setRightFalse: function () {
-    //        this.moveRight = false;
-    //    },
-    //
     //    orientationChange: function () {
     //        // If the game is in portrait (wrong orientation)
     //        if (game.scale.isPortrait) {
@@ -331,11 +233,6 @@ var wormState = {
     //            game.paused = false;
     //            this.rotateLabel.text = '';
     //        }
-    //    },
-    //
-    //    render: function () {
-    //        // Sprite debug info, including location information. 
-    //        game.debug.spriteCoords(this.wormplayer, 50, game.height - 100);
     //    },
 
 };
