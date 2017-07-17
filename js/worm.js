@@ -2,7 +2,7 @@
 
 // This game is an amalgamation of original code, code inspired by the Discover Phaser tutorial, and Danny Markov's "Making Your First HTML5 Game With Phaser" tutorial on tutorialzine.com.
 
-var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
+var isClicked = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
 var worm, decay, nutrient, holding,
     speed, collisionCounter,
@@ -63,7 +63,6 @@ var wormState = {
         for (var i = 0; i < 10; i++) {
             worm[i] = game.add.sprite(150 + i * SQUARESIZE, 150, 'wormsquare');
         }
-        console.log("last worm cell is " + worm[0].x + ", " + worm[0].y);
 
         // Enable overlap physics.
         game.physics.arcade.enable(worm, Phaser.Physics.ARCADE);
@@ -92,12 +91,19 @@ var wormState = {
             this.orientationChange();
         }
 
+        game.input.onDown.add(this.makeTrue, this);
     },
-
+    
     update: function () {
+         //This is meant to allow a nutrient to be dropped only on a mouse-click. 
+        if (!game.input.activePointer.leftButton.isDown) {
+            this.makeFalse();
+            wasCalled = false;
+        }
+        
         // Is the worm over the goal? 
         game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
-
+        
         // Use the arrow keys to determine the worm's new direction, while preventing illegal directions.
         if (this.cursor.right.isDown && direction != 'left') {
             new_direction = 'right';
@@ -112,7 +118,7 @@ var wormState = {
         collisionCounter = Math.min(10, collisionCounter); // Set the collision counter to at most 10.
         speed = Math.min(10, collisionCounter); // Modulate speed based on the collision counter.
 
-        // Run this code every 10 (to 20) runs through "update"
+        // Run this code every 10 (to 20) runs through "update," unless sped up.
         updateDelayW++;
         if (updateDelayW % (10 + speed) == 0) {
             // Worm movement
@@ -224,25 +230,28 @@ var wormState = {
         }
     },
 
-    pressHere = document.getElementByID('phasergame');  
-    pressHere.addEventListener('click', this.makeTrue);
+    makeTrue: function () {
+        isClicked = true;
+    },
     
+    makeFalse: function () {
+        isClicked = false;
+    },
+
     depositNutrient: function () {
         x = worm[0].x;
         y = worm[0].y;
 
-        if (wasCalled == true) {
+        if (isClicked == true && holding > 0) {
             holding--;
             console.log("Now holding " + holding);
 
             nutrient[nutrient.length] = game.add.sprite(x, y, 'nutrient');
+            this.delivered++;
+            this.updateDelivered(this.delivered);
 
-            wasCalled == false;
+            isClicked = false;
         }
-    },
-
-    makeTrue: function () {
-        wasCalled = true;
     },
 
     //    eraseNutrient: function () {
