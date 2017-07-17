@@ -99,7 +99,7 @@ var birdState = {
         this.fallingApple.alive = false;
         this.fallingApple.destroy();
 
-        Client.sendDecay();
+        Client.sendDecay(1);
     },
 
     appleDrop: function () {

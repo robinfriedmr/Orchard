@@ -66,6 +66,7 @@ Client.socket.on('receiveApple', function () {
 });
 
 Client.socket.on('receiveDecay', function (data) {
+    console.log(data + " is what the number of decay sent to worm player.")
     wormState.newDecay(data); 
 });
 
@@ -74,7 +75,7 @@ Client.socket.on('plantSeed', function (seedX) {
 });
 
 Client.socket.on('updateScore', function (score) {
-    wormState.updateScore(score);
+    wormState.updatewScore(score);
     treeState.updateScore(score);
     birdState.updateScore(score);
 });

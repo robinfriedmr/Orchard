@@ -53,12 +53,15 @@ io.on('connection', function (socket) {
             // Send the currentData out for all connected players. 
 
             if (socket.player.id == httpServer.currentData.wormPD) {
+                playerMap[WORM_GAME] = -1
                 httpServer.currentData.wormPD = -1;
                 io.emit('refreshID', httpServer.currentData);
             } else if (socket.player.id == httpServer.currentData.treePD) {
+                playerMap[TREE_GAME] = -1
                 httpServer.currentData.treePD = -1;
                 io.emit('refreshID', httpServer.currentData);
             } else if (socket.player.id == httpServer.currentData.birdPD) {
+                playerMap[BIRD_GAME] = -1
                 httpServer.currentData.birdPD = -1;
                 io.emit('refreshID', httpServer.currentData);
             } else {
@@ -131,7 +134,7 @@ io.on('connection', function (socket) {
         });
         
         socket.on('sendDecay', function (data) {
-            console.log("server has the bird's decaying apple"); 
+            console.log("server has decaying apple, quantity x" + data); 
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('receiveDecay', data);
             }

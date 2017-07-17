@@ -25,10 +25,26 @@ var wormState = {
         // Add map 
         this.createWorld();
 
-        wormState.wScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
-            font: '24px Arial',
+        // Score labels
+        this.wScoreLabel = game.add.text(game.width - 12, game.height - 10, 'trees planted: 0', {
+            font: '16px Arial',
             fill: '#ffffff'
         });
+        this.wScoreLabel.anchor.setTo(1, 1);
+
+        this.devoured = 0;
+        decayDevoured = game.add.text(game.width / 2, game.height - 10, 'decay devoured: ' + this.devoured, {
+            font: '16px Arial',
+            fill: '#ffffff'
+        });
+        decayDevoured.anchor.setTo(0.5, 1);
+        
+        this.delivered = 0;
+        nutrientsDelivered = game.add.text(12, game.height - 10, 'nutrients delivered: ' + this.delivered, {
+            font: '16px Arial', 
+            fill: '#ffffff'
+        });
+        nutrientsDelivered.anchor.setTo(0, 1);
 
         worm = []; // This will work as a stack, containing the parts of our worm
         decay = []; // An array for the decay.
@@ -170,11 +186,10 @@ var wormState = {
     },
 
     decayCollision: function (firstCell) {
-
         for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching
             for (var j = 0; j < decay.length; j++) { // any of the pieces of decay
-                if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) { 
-                    
+                if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) {
+
                     // Destroy the old decay.
                     decay[j].destroy();
                     // Remove from array (1 element at index j)
@@ -183,11 +198,14 @@ var wormState = {
                     // Send a nutrient to the server.
                     Client.sendNutrient();
 
-                    if (collisionCounter > 0) {
+                    // Reduce the counter / speed up the worm.
+                    if (collisionCounter > -3) {
                         collisionCounter--;
                         console.log(collisionCounter);
                     }
-
+                    // Increase the devoured variable by 1
+                    this.devoured++;
+                    this.updateDevoured(this.devoured);
                 }
             }
         }
@@ -206,6 +224,8 @@ var wormState = {
     createWorld: function () {
         game.add.image(0, 0, 'wormBG');
 
+        // *** CREATE OBSTACLES
+
         //        this.map = game.add.tilemap('dmap');
         //        this.map.addTilesetImage('tiles');
         //        this.layer = this.map.createLayer('Tile Layer 1');
@@ -216,10 +236,18 @@ var wormState = {
         //        this.map.setCollision();
     },
 
-    updateScore: function (wScore) {
-        if (wormState.wScoreLabel) {
-            wormState.wScoreLabel.setText('trees planted: ' + wScore);
+    updatewScore: function (wScore) {
+        if (this.wScoreLabel) {
+            this.wScoreLabel.setText('trees planted: ' + wScore);
         }
+    },
+    
+    updateDevoured: function (devoured) {
+        decayDevoured.setText('decay devoured: ' + devoured);  
+    },
+    
+    updateDelivered: function (delivered) {
+        nutrientsDelivered.setText('nutrients delivered: ' + delivered);  
     },
 
     // ****************** MOBILE FUNCTIONS *****************
