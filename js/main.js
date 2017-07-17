@@ -4,6 +4,7 @@
 var game = new Phaser.Game(
     40 * 15,
     23 * 15,
+    Phaser.AUTO, 'phasergame'
 );
 
 // Define our global variable

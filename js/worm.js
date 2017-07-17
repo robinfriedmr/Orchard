@@ -4,7 +4,7 @@
 
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
-var worm, decay, nutrient,
+var worm, decay, nutrient, holding,
     speed, collisionCounter,
     updateDelayW, direction, new_direction;
 
@@ -38,27 +38,36 @@ var wormState = {
             fill: '#ffffff'
         });
         decayDevoured.anchor.setTo(0.5, 1);
-        
+
         this.delivered = 0;
         nutrientsDelivered = game.add.text(12, game.height - 10, 'nutrients delivered: ' + this.delivered, {
-            font: '16px Arial', 
+            font: '16px Arial',
             fill: '#ffffff'
         });
         nutrientsDelivered.anchor.setTo(0, 1);
 
         worm = []; // This will work as a stack, containing the parts of our worm
         decay = []; // An array for the decay.
-        nutrient = []; // An array for the nutrient.
+        nutrient = []; // An array for deposited nutrients.
+        holding = 0; // A counter for how much the worm is carrying at a given time. 
         speed = 0; // Game speed.
         collisionCounter = 0; // Number of times collided with self or wall.
         updateDelayW = 0; // A variable for control over update rates.
         direction = 'right'; // The direction of our worm.
         new_direction = null; // A buffer to store the new direction into.
 
-        // Add sprites to the game
+        // Add sprites to the game.
+        this.goal = game.add.sprite(game.width / 2, 0, 'goal');
+        this.goal.anchor.setTo(0.5, 0);
+
         for (var i = 0; i < 10; i++) {
             worm[i] = game.add.sprite(150 + i * SQUARESIZE, 150, 'wormsquare');
         }
+        console.log("last worm cell is " + worm[0].x + ", " + worm[0].y);
+
+        // Enable overlap physics.
+        game.physics.arcade.enable(worm, Phaser.Physics.ARCADE);
+        game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
 
         // Genereate the first three pieces of decay.
         this.newDecay(3);
@@ -86,6 +95,8 @@ var wormState = {
     },
 
     update: function () {
+        // Is the worm over the goal? 
+        game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
 
         // Use the arrow keys to determine the worm's new direction, while preventing illegal directions.
         if (this.cursor.right.isDown && direction != 'left') {
@@ -197,6 +208,8 @@ var wormState = {
 
                     // Send a nutrient to the server.
                     Client.sendNutrient();
+                    holding++; // How many nutrients are we holding?
+                    console.log("Holding " + holding);
 
                     // Reduce the counter / speed up the worm.
                     if (collisionCounter > -3) {
@@ -211,15 +224,36 @@ var wormState = {
         }
     },
 
-    eraseNutrient: function () {
-        console.log(this.nutrientArray.length);
-        //console.log("A nutrient is erased.");
+    pressHere = document.getElementByID('phasergame');  
+    pressHere.addEventListener('click', this.makeTrue);
+    
+    depositNutrient: function () {
+        x = worm[0].x;
+        y = worm[0].y;
 
-        which = birdState.getRandomInt(0, this.nutrientArray.length);
-        this.nutrientArray.splice(which - 1, 1);
+        if (wasCalled == true) {
+            holding--;
+            console.log("Now holding " + holding);
 
-        console.log(this.nutrientArray.length);
+            nutrient[nutrient.length] = game.add.sprite(x, y, 'nutrient');
+
+            wasCalled == false;
+        }
     },
+
+    makeTrue: function () {
+        wasCalled = true;
+    },
+
+    //    eraseNutrient: function () {
+    //        console.log(this.nutrientArray.length);
+    //        //console.log("A nutrient is erased.");
+    //
+    //        which = birdState.getRandomInt(0, this.nutrientArray.length);
+    //        this.nutrientArray.splice(which - 1, 1);
+    //
+    //        console.log(this.nutrientArray.length);
+    //    },
 
     createWorld: function () {
         game.add.image(0, 0, 'wormBG');
@@ -241,13 +275,13 @@ var wormState = {
             this.wScoreLabel.setText('trees planted: ' + wScore);
         }
     },
-    
+
     updateDevoured: function (devoured) {
-        decayDevoured.setText('decay devoured: ' + devoured);  
+        decayDevoured.setText('decay devoured: ' + devoured);
     },
-    
+
     updateDelivered: function (delivered) {
-        nutrientsDelivered.setText('nutrients delivered: ' + delivered);  
+        nutrientsDelivered.setText('nutrients delivered: ' + delivered);
     },
 
     // ****************** MOBILE FUNCTIONS *****************
