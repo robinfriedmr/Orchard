@@ -46,7 +46,6 @@ var wormState = {
 
         // Genereate the first three pieces of decay.
         this.newDecay(3);
-        console.log(decay.length);
 
         // The arrow keys and spacebar will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -165,28 +164,32 @@ var wormState = {
                 randomY = (Math.floor(Math.random() * 21) * SQUARESIZE) + SQUARESIZE;
 
             // Add a new decay.
-            decaySprite = game.add.sprite(randomX, randomY, 'decay');
-            decay.push(decaySprite);
+            decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
+
         }
     },
 
     decayCollision: function (firstCell) {
-        // Check if the head is colliding with the decay. (Changed from a for loop into just the head.) 
-        if (firstCell.x == decaySprite.x && firstCell.y == decaySprite.y) {
 
-            // Destroy the old decay.
-            // *** NEEDS TO BE REMOVED FROM ARRAY AS WELL ***
-            decaySprite.destroy();
+        for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching
+            for (var j = 0; j < decay.length; j++) { // any of the pieces of decay
+                if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) { 
+                    
+                    // Destroy the old decay.
+                    decay[j].destroy();
+                    // Remove from array (1 element at index j)
+                    decay.splice(j, 1);
 
-            // Send a nutrient to the server.
-            Client.sendNutrient();
+                    // Send a nutrient to the server.
+                    Client.sendNutrient();
 
-            if (collisionCounter > 0) {
-                collisionCounter--;
-                console.log(collisionCounter);
+                    if (collisionCounter > 0) {
+                        collisionCounter--;
+                        console.log(collisionCounter);
+                    }
+
+                }
             }
-
-            console.log(decay.length);
         }
     },
 
