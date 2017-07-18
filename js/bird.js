@@ -1,6 +1,8 @@
 var wasCalledB = false;
 var appleEaten = false;
 
+var flip = true;
+
 var birdState = {
 
     create: function () {
@@ -8,7 +10,7 @@ var birdState = {
         // Add inputs.
         this.cursor = game.input.keyboard.createCursorKeys();
         this.debugAppleDrop = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-        this.poopButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
+        this.poopButton = game.input.keyboard.addKey(Phaser.Keyboard.W);
         this.wasCalledToggle = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
         // Create object for fallingApple so that it's defined.
@@ -57,7 +59,7 @@ var birdState = {
             game.scale.onOrientationChange.add(this.orientationChange, this);
             // Call the function at least once
             this.orientationChange();
-            
+
             this.addMobileInputs();
         }
     },
@@ -98,7 +100,6 @@ var birdState = {
     destroyFallenApple: function () {
         this.fallingApple.alive = false;
         this.fallingApple.destroy();
-
         Client.sendDecay();
     },
 
@@ -108,6 +109,8 @@ var birdState = {
         this.fallingApple.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(this.fallingApple, Phaser.Physics.ARCADE);
         this.fallingApple.body.setCircle(37.5);
+        this.fallingApple.body.velocity.y = 10;
+        this.fallingApple.tint = 0xE60C0C;
     },
 
     getRandomInt: function (min, max) {
@@ -127,7 +130,7 @@ var birdState = {
 
     propagate: function () {
         if (appleEaten == true) {
-            if (this.poopButton.isDown && this.birdplayer.x > game.width - 200) {
+            if (this.poopButton.isDown) {
                 this.dump(this.birdplayer.x, this.birdplayer.y);
             }
         }
@@ -142,7 +145,11 @@ var birdState = {
 
         this.emitter.start(true, 1000, null, 10);
 
-        Client.sendDecay("ten");
+        Client.sendDecay();
+        Client.sendDecay();
+        Client.sendDecay();
+        Client.sendDecay();
+        Client.sendDecay();
         Client.sendSeed(this.birdplayer.x);
     },
 
@@ -157,7 +164,7 @@ var birdState = {
     },
 
     jump: function () {
-        this.birdplayer.body.velocity.y = -200;
+        this.birdplayer.body.velocity.y = -350;
 
         if (this.birdplayer.scale.x == -1) {
             game.add.tween(this.birdplayer).to({
@@ -190,40 +197,39 @@ var birdState = {
     },
 
     movePlayer: function () {
-        //        // If 0 fingers are touching the screen
-        //        if (game.input.totalActivePointers == 0) {
-        //            // Make sure the player is not moving
-        //            this.moveLeft = false;
-        //            this.moveRight = false;
-        //        }
+        if (this.cursor.left.isUp && this.cursor.right.isUp) {
+            flip = true;
+        }
 
         // Moving conditions
-        if (this.cursor.left.isDown) {
-            this.birdplayer.body.velocity.x = -200;
-            this.jump();
+        if (flip) {
+            if (this.cursor.left.isDown) {
+                this.birdplayer.body.velocity.x = -350;
+                this.jump();
 
-            if (this.birdplayer.scale.x == 1) {
-                this.birdplayer.scale.x = -1;
-            }
+                if (this.birdplayer.scale.x == 1) {
+                    this.birdplayer.scale.x = -1;
+                }
+                flip = false;
 
-        } else if (this.cursor.right.isDown) {
-            this.birdplayer.body.velocity.x = 200;
-            this.jump();
+            } else if (this.cursor.right.isDown) {
+                this.birdplayer.body.velocity.x = 350;
+                this.jump();
 
-            if (this.birdplayer.scale.x == -1) {
-                this.birdplayer.scale.x = 1;
-            }
+                if (this.birdplayer.scale.x == -1) {
+                    this.birdplayer.scale.x = 1;
+                }
+                flip = false;
 
-        } else if (this.cursor.up.isDown) {
-            this.jump();
-        } else {
-            // Stop the player
-            this.birdplayer.body.velocity.x = 0;
+            } else {
+                // Stop the player
+                this.birdplayer.body.velocity.x = 0;
 
-            if (this.birdplayer.body.onFloor() || this.birdplayer.body.touching.down) {
-                game.add.tween(this.birdplayer).to({
-                    angle: 0
-                }, 100).start();
+                if (this.birdplayer.body.onFloor() || this.birdplayer.body.touching.down) {
+                    game.add.tween(this.birdplayer).to({
+                        angle: 0
+                    }, 100).start();
+                }
             }
         }
     },

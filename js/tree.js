@@ -1,16 +1,16 @@
 var nutrientNo = 0; // Create global variable 'nutrientNo' to represent the number of nutrient ingredients present.
 var CO2No = 0; // Number of CO2 ingredients present.
-var waterNo = 0; // Number of water ingredients present.
 
-var wasCalledT = false; // for debug.
-var appleChecked = false; // needed to run check for ingredients only once.
-var movedoff = false; // check for sprite movement off the pile
-var itmatters = false;
+var rand1 = -1;
+var rand2 = -1;
+var originalspeed = 600;
+var speed = originalspeed;
 
-var updateDelayT = 0;
+var hits = 0;
+var flip = true;
 
-const RADIUS = 80; // Radius of circular motion.
-const SPEED = 0.0005 // Speed of the circular motion.
+var nutrientammoOn = false;
+var C02ammoOn = true;
 
 var treeState = {
 
@@ -22,16 +22,28 @@ var treeState = {
 
         // Arrow and WASD keys
         this.cursor = game.input.keyboard.createCursorKeys();
-        this.debugKeys = {
-            nutBut: game.input.keyboard.addKey(Phaser.Keyboard.Q),
-            CO2But: game.input.keyboard.addKey(Phaser.Keyboard.W),
-            watBut: game.input.keyboard.addKey(Phaser.Keyboard.E),
-            wasCalledToggle: game.input.keyboard.addKey(Phaser.Keyboard.R), // R for reset
+        this.wasd = {
+            Left: game.input.keyboard.addKey(Phaser.Keyboard.A),
+            Right: game.input.keyboard.addKey(Phaser.Keyboard.D),
         };
-        this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         // Add background and map (eventually) 
         this.createWorld();
+        // Add sprites to the game
+        this.growingapple = game.add.sprite(game.width / 2, game.height / 2, 'growingapple');
+        this.growingapple.anchor.setTo(0.5, 0.5);
+        this.growingapple.scale.setTo(0.75, 0.75);
+        this.growingapple.tint = 0x17E60C;
+
+        //Enable physics on the sprites' bodies.
+        game.physics.arcade.enable([this.growingapple]);
+        this.growingapple.body.setCircle(37.5); // set growingapple's body to a circle with a 37.5 px radius
+        this.growingapple.body.collideWorldBounds = true;
+        this.growingapple.body.bounce.setTo(1, 1);
+        this.growingapple.inputEnabled = true;
+
+        this.growingapple.events.onInputDown.add(this.speedUp, this);
+        this.growingapple.events.onInputUp.add(this.release, this);
 
         treeState.tScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
             font: '24px Arial',
@@ -39,11 +51,14 @@ var treeState = {
         });
 
         // Add icons on UI to indicate ingredients
-        this.nImage = game.add.image(40, 185, 'nutrient');
-        this.CImage = game.add.image(40, 235, 'CO2');
-        this.wImage = game.add.image(40, 285, 'water');
+        this.nImage = game.add.image(40, 240, 'nutrient');
+        this.nImage.inputEnabled = true;
+        this.nImage.events.onInputDown.add(this.activateNutrientAmmo, this);
 
-        this.nutrientIng = {};
+
+        this.CImage = game.add.image(40, 290, 'CO2');
+        this.CImage.inputEnabled = true;
+        this.CImage.events.onInputDown.add(this.activateCO2Ammo, this);
 
         // Add numbers to show the number of ingredients in each stack.
         var textStyle_Nutrient = {
@@ -51,17 +66,8 @@ var treeState = {
             fill: "#fff",
             align: "center"
         };
-        nutrientNoText = game.add.text(90, 185, nutrientNo.toString(), textStyle_Nutrient);
-        CO2NoText = game.add.text(90, 235, CO2No.toString(), textStyle_Nutrient);
-        waterNoText = game.add.text(90, 285, waterNo.toString(), textStyle_Nutrient);
-
-        // Add sprites to the game
-        this.growingapple = game.add.sprite(game.width / 2, game.height / 2, 'growingapple');
-        this.growingapple.anchor.setTo(0.5, 0.5);
-
-        //Enable physics on the sprites' bodies.
-        game.physics.arcade.enable([this.growingapple]);
-        this.growingapple.body.setCircle(37.5); // set growingapple's body to a circle with a 37.5 px radius
+        nutrientNoText = game.add.text(90, 240, nutrientNo.toString(), textStyle_Nutrient);
+        CO2NoText = game.add.text(90, 290, 'Unlimited', textStyle_Nutrient);
 
 
         // The arrow keys will only ever affect the game, not the browswer window.
@@ -84,225 +90,109 @@ var treeState = {
             this.orientationChange();
         }
 
-        // Create empty objects for the apple's ingredients to fill later.
-        snappedNIng = {};
-        snappedCIng = {};
-        snappedWIng = {};
+        game.time.events.loop(Phaser.Timer.SECOND, this.growingappleProperties, this);
+
     },
 
     update: function () {
         // Collisions should always go at the top of the Update function.
         game.physics.arcade.overlap(this.nutrientIng, this.growingapple, this.addNutrientIng, null, this);
         game.physics.arcade.overlap(this.CO2Ing, this.growingapple, this.addCO2Ing, null, this);
-        game.physics.arcade.overlap(this.waterIng, this.growingapple, this.addWaterIng, null, this);
 
-        this.growingappleProperties(); // Run the math that places the apple and decides whether it's shown.
-
-        // Generate CO2 and Water at random intervals of time (frames). 
-        updateDelayT++;
-        var randomC = (Math.floor(Math.random() * 10));
-        var randomW = (Math.floor(Math.random() * 10));
-        if (updateDelayT % (randomC * 60) == 0) {
-            this.CO2Supply(); // Call in CO2 or water after
+        if (this.wasd.Right.isDown) {
+            speed = speed + 1;
         }
-        if (updateDelayT % (randomW * 60) == 0) {
-            this.waterSupply(); // a random amount of time has passed
+        if (this.wasd.Left.isDown) {
+            speed = speed - 1;
         }
 
-        // Debug
-        if (this.debugKeys.wasCalledToggle.isDown && wasCalledT == true) {
-            wasCalledT = false; // Toggle wasCalled back to false.
-            console.log("wasCalled is now " + wasCalledT);
+        if (rand1 >= .66) {
+            this.growingapple.body.acceleration.x = speed;
+        } else if (rand1 <= .33) {
+            this.growingapple.body.acceleration.x = -speed;
+        } else {
+            this.growingapple.body.acceleration.x = 0;
         }
-        this.debugNutrient(); // Call in a nutrient when conditions are met.
 
-        // Pull nutrient code
-        if ((this.nutrientIng.x != 40 || this.nutrientIng.y != 185) && itmatters == true) {
-            movedoff = true;
-            itmatters = false;
+        if (rand2 >= .66) {
+            this.growingapple.body.acceleration.y = speed;
+        } else if (rand2 <= .33) {
+            this.growingapple.body.acceleration.y = -speed;
+        } else {
+            this.growingapple.body.acceleration.y = 0;
         }
-        if (movedoff == true) {
-            Client.pullNutrient();
-            movedoff = false;
-        }
+
+        this.growingapple.body.maxVelocity.x = speed;
+        this.growingapple.body.maxVelocity.y = speed;
+
+        console.log(hits);
+
 
     },
 
     growingappleProperties: function () {
-        var period = game.time.now * SPEED;
-        this.growingapple.x = game.world.centerX + Math.cos(period) * (RADIUS + 40); // Path is slightly wider than it is tall.
-        this.growingapple.y = game.world.centerY + Math.sin(period) * RADIUS;
+        rand1 = Math.random();
+        rand2 = Math.random();
+    },
 
-        if (period % Math.PI < 0.01) {
-            game.camera.flash(0xffffff, 500); // Makes it easy to see when things are happening.
-        }
+    clearApple: function () {},
 
-        if (Math.sin(period) < 0) { // When this.growingapple is on its way right, 
-            this.growingapple.visible = true; // allow it to be visible.
-            appleChecked = false;
-        } else { // When this.growingapple is on its way back to the left, check to see if 
-            if (appleChecked == false) { // it's a good time to check, and then if
-                var ingredients = this.growingapple.children; // the ingredients (aka, the children of the growingapple)
-                if (ingredients.includes(snappedNIng) && // include Nutrient, CO2, and Water.
-                    ingredients.includes(snappedCIng) &&
-                    ingredients.includes(snappedWIng)) {
-                    this.drawApple(); // If it does, draw a whole apple
-                    Client.sendApple();
-                    this.clearApple(); // Then clear the growingapple
-                    console.log("Everything is here.");
-                } else {
-                    console.log("Something's missing.");
-                    this.clearApple(); // Otherwise, just clear the growingapple
-                }
-
-                this.growingapple.visible = false;
-                appleChecked = true; // Run the check only once.
+    speedUp: function () {
+        if (flip && C02ammoOn) {
+            console.log("hit with CO2Ammo");
+            hits++;
+            if (hits == 1) {
+                this.growingapple.tint = 0xE6B70C;
+                speed = speed * 2;
             }
+            if (hits == 2) {
+                this.growingapple.tint = 0xE60C0C;
+                speed = speed * 2;
+            }
+            if (hits == 3) {
+                this.growingapple.tint = 0x17E60C;
+                speed = originalspeed;
+                Client.sendApple();
+                hits = 0;
+            }
+            flip = false;
         }
-    },
 
-    drawApple: function () {
-        console.log("an apple is drawn here.");
-        drawnApple = game.add.sprite(game.width - 225, game.height / 2, 'growingapple');
-        drawnApple.tint = 0xff9595;
-        game.add.tween(drawnApple).to({
-            y: game.height + 80
-        }, 1000).start();
-    },
-
-    clearApple: function () {
-        this.growingapple.children = [];
-    },
-
-    debugNutrient: function () {
-        if (!wasCalledT && this.debugKeys.nutBut.isDown) { // If wasCalled is false and the nutrient button is pressed, 
-            wasCalledT = true; // set wasCalled to true to prevent the event from triggering a zillion times, and
-            console.log("wasCalled is now " + wasCalledT); // print to the console the new value for wasCalled.
-
-            this.nutrientSupply();
+        if (flip && nutrientammoOn && nutrientNo > 0) {
+            console.log("hit with nutrientAmmo");
+            Client.sendApple();
+            nutrientNo--;
+            nutrientNoText.text = nutrientNo.toString();
+            flip = false;
         }
+
+    },
+
+    release: function () {
+        flip = true;
     },
 
     nutrientSupply: function () {
-        if (nutrientNo == 0) {
-            this.buildNutrient();
-        }
         nutrientNo++;
         nutrientNoText.text = nutrientNo.toString();
         console.log("nutrientNo is " + nutrientNo);
     },
 
-    CO2Supply: function () {
-        if (CO2No == 0) {
-            this.buildCO2();
-        }
-        CO2No++;
-        CO2NoText.text = CO2No.toString();
-        console.log("CO2No is " + CO2No);
+    activateNutrientAmmo: function () {
+        nutrientammoOn = true;
+        C02ammoOn = false;
+        console.log("nutrientAmmoActive");
     },
 
-    waterSupply: function () {
-        if (waterNo == 0) {
-            this.buildWater();
-        }
-        waterNo++;
-        waterNoText.text = waterNo.toString();
-        console.log("waterNo is " + waterNo);
+    activateCO2Ammo: function () {
+        nutrientammoOn = false;
+        C02ammoOn = true;
+        console.log("C02AmmoActive");
     },
 
-    // NEW SPRITE CREATION BEGIN *** *** ***
-    buildNutrient: function () {
-        // Initialize nutrientIng.
-        this.nutrientIng = game.add.sprite(40, 185, 'nutrient'); // Add the sprite for the ingredient 'nutrient'
-        this.nutrientIng.anchor.setTo(0.5, 0.5); // The coordinates are for the center of the sprite.
-        game.physics.arcade.enable(this.nutrientIng); // Give sprite a body.
-        this.nutrientIng.inputEnabled = true; // Input Enable the sprite.
-        this.nutrientIng.input.enableDrag(true); // Allow dragging - 'true' parameter makes the sprite snap to the center.
-        
-        movedoff = false;
-        itmatters = true;
-    },
-
-    buildCO2: function () {
-        // Initialize CO2Ing.
-        this.CO2Ing = game.add.sprite(40, 235, 'CO2');
-        this.CO2Ing.anchor.setTo(0.5, 0.5);
-        game.physics.arcade.enable(this.CO2Ing);
-        this.CO2Ing.inputEnabled = true;
-        this.CO2Ing.input.enableDrag(true);
-    },
-
-    buildWater: function () {
-        // Initialize waterIng.
-        this.waterIng = game.add.sprite(40, 285, 'water');
-        this.waterIng.anchor.setTo(0.5, 0.5);
-        game.physics.arcade.enable(this.waterIng);
-        this.waterIng.inputEnabled = true;
-        this.waterIng.input.enableDrag(true);
-    },
-    // NEW SPRITE CREATION END *** *** ***
-
-    // ADD INGREDIENT TO GROWING APPLE BEGIN *** *** ***
-    addNutrientIng: function (nutrientIng, growingapple) {
-        nutrientIng.destroy(); // Destroy dragged sprite. 
-        if (nutrientNo > 1) { // If there was more than one nutrient in the stack,
-            this.buildNutrient(); // Replace the draggable sprite.
-        }
-
-        // Replace the dragged sprite with a sprite snapped to the growingapple.
-        snappedNIng = this.growingapple.addChild(game.make.sprite(0, -20, 'nutrient'));
-        snappedNIng.anchor.setTo(0.5, 0.5);
-
-        // Decrease the number of nutrients available.
-        nutrientNo--;
-        nutrientNoText.text = nutrientNo.toString();
-        console.log("An overlap has occurred. NutrientNo is " + nutrientNo);
-    },
-
-    addCO2Ing: function (CO2Ing, growingapple) {
-        CO2Ing.destroy();
-        if (CO2No > 1) {
-            this.buildCO2();
-        }
-
-        snappedCIng = this.growingapple.addChild(game.make.sprite(-17, 8, 'CO2'));
-        snappedCIng.anchor.setTo(0.5, 0.5);
-
-        CO2No--;
-        CO2NoText.text = CO2No.toString();
-        console.log("An overlap has occurred. CO2No is " + CO2No);
-    },
-
-    addWaterIng: function (waterIng, growingapple) {
-        waterIng.destroy();
-        if (waterNo > 1) {
-            this.buildWater();
-        }
-
-        snappedWIng = this.growingapple.addChild(game.make.sprite(16, 8, 'water'));
-        snappedWIng.anchor.setTo(0.5, 0.5);
-
-        waterNo--;
-        waterNoText.text = waterNo.toString();
-        console.log("An overlap has occurred. waterNo is " + waterNo);
-    },
-    // ADD INGREDIENT TO GROWING APPLE END *** *** ***
 
     createWorld: function () {
         game.add.image(0, 0, 'treeBG');
-
-        //        // Create the tilemap
-        //        this.map = game.add.tilemap('wmap');
-        //        // Add the tileset to the map
-        //        this.map.addTilesetImage('tiles');
-        //        // Create the layer by specifying the name of the Tiled layer
-        //        this.layer = this.map.createLayer('Tile Layer 1');
-        //
-        //        // Set the world size to match the size of the layer
-        //        this.layer.resizeWorld();
-        //        // Enable collisions for the XXth tilset element
-        //        this.map.setCollision();
-        //    
     },
 
     updateScore: function (tScore) {

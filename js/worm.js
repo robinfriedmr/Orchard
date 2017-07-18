@@ -5,8 +5,8 @@
 var wasCalled = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
 var worm, decay, nutrient,
-squareSize, speed, collisionCounter,
-updateDelayW, direction, new_direction;
+    squareSize, speed, collisionCounter,
+    updateDelayW, direction, new_direction;
 
 var wormState = {
 
@@ -173,21 +173,23 @@ var wormState = {
 
     decayCollision: function (firstCell) {
         // Check if the head is colliding with the decay. (Changed from a for loop into just the head.) 
-        if (firstCell.x == decaySprite.x && firstCell.y == decaySprite.y) {
+        for (i = 0; i++; i <= decay.length - 1) {
+            console.log("test");
+            if (firstCell.x == decay[i].x && firstCell.y == decay[i].y) {
+                // Put in a nutrient where the decay is.
+                nutrientSprite = game.add.sprite(decay[i].x, decay[i].y, 'nutrient');
+                nutrient.push(nutrientSprite);
 
-            // Put in a nutrient where the decay is.
-            nutrientSprite = game.add.sprite(decaySprite.x, decaySprite.y, 'nutrient');
-            nutrient.push(nutrientSprite);
+                // Send a nutrient to the server.
+                Client.sendNutrient();
 
-            // Send a nutrient to the server.
-            Client.sendNutrient();
+                // Destroy the old decay.
+                decay[i].destroy(); // DOESN'T DESTROY
 
-            // Destroy the old decay.
-            decaySprite.destroy(); // DOESN'T DESTROY
-
-            if (collisionCounter > 0) {
-                collisionCounter--;
-                console.log(collisionCounter);
+                if (collisionCounter > 0) {
+                    collisionCounter--;
+                    console.log(collisionCounter);
+                }
             }
         }
 
