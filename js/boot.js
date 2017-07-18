@@ -18,6 +18,7 @@ var bootState = {
         game.load.image('decay', 'assets/img/decaysquare.png');
         game.load.image('nutrient', 'assets/img/nutrient.png');
         game.load.image('goal', 'assets/img/goal.png');
+        game.load.image('root', 'assets/img/root.png');
 
         game.load.image('water', 'assets/img/water.png');
         game.load.image('CO2', 'assets/img/CO2.png');

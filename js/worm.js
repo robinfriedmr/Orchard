@@ -22,6 +22,9 @@ var wormState = {
         this.cursor = game.input.keyboard.createCursorKeys();
         this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
+        // Define roots
+        this.roots = [];
+
         // Add map 
         this.createWorld();
 
@@ -51,7 +54,7 @@ var wormState = {
         nutrient = []; // An array for deposited nutrients.
         holding = 0; // A counter for how much the worm is carrying at a given time. 
         speed = 0; // Game speed.
-        collisionCounter = 0; // Number of times collided with self or wall.
+        collisionCounter = 0; // Number of times collided with self or wall.        
         updateDelayW = 0; // A variable for control over update rates.
         direction = 'right'; // The direction of our worm.
         new_direction = null; // A buffer to store the new direction into.
@@ -93,25 +96,27 @@ var wormState = {
 
         game.input.onDown.add(this.makeTrue, this);
     },
-    
+
     update: function () {
-         //This is meant to allow a nutrient to be dropped only on a mouse-click. 
+        //This is meant to allow a nutrient to be dropped only on a mouse-click. 
         if (!game.input.activePointer.leftButton.isDown) {
             this.makeFalse();
             wasCalled = false;
         }
-        
+
         // Is the worm over the goal? 
         game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
-        
+
+        var firstCell = worm[worm.length - 1];
+
         // Use the arrow keys to determine the worm's new direction, while preventing illegal directions.
-        if (this.cursor.right.isDown && direction != 'left') {
+        if (this.cursor.right.isDown && direction != 'left' && firstCell.x < (game.width - SQUARESIZE)) {
             new_direction = 'right';
-        } else if (this.cursor.left.isDown && direction != 'right') {
+        } else if (this.cursor.left.isDown && direction != 'right' && firstCell.x > SQUARESIZE) {
             new_direction = 'left';
-        } else if (this.cursor.up.isDown && direction != 'down') {
+        } else if (this.cursor.up.isDown && direction != 'down' && firstCell.y > 0) {
             new_direction = 'up';
-        } else if (this.cursor.down.isDown && direction != 'up') {
+        } else if (this.cursor.down.isDown && direction != 'up' && firstCell.y < (game.height - SQUARESIZE)) {
             new_direction = 'down';
         }
 
@@ -122,14 +127,15 @@ var wormState = {
         updateDelayW++;
         if (updateDelayW % (10 + speed) == 0) {
             // Worm movement
-            var firstCell = worm[worm.length - 1],
-                lastCell = worm.shift(),
+            //firstCell is now defined above the new-direction code.
+            lastCell = worm.shift(),
                 oldLastCellx = lastCell.x,
                 oldLastCelly = lastCell.y;
 
             // Check for collisions. Parameter is the head of the worm.
             this.wallCollision(firstCell);
             this.selfCollision(firstCell);
+            this.rootCollision(firstCell);
             this.decayCollision(firstCell);
 
             // If a new direction has been chosen from the keyboard, make it the direction of the worm now. Move that way.
@@ -190,6 +196,16 @@ var wormState = {
         }
     },
 
+    rootCollision: function (head) {
+        // Check if the head of the worm overlaps with any roots.
+        for (var i = 0; i < this.roots.length - 1; i++) {
+            if (head.x == this.roots[i].x && head.y == this.roots[i].y) {
+                collisionCounter++;
+                console.log(collisionCounter);
+            }
+        }
+    },
+
     newDecay: function (number) {
         for (i = 0; i < number; i++) {
             // Choose a random place on the grid.
@@ -233,7 +249,7 @@ var wormState = {
     makeTrue: function () {
         isClicked = true;
     },
-    
+
     makeFalse: function () {
         isClicked = false;
     },
@@ -266,6 +282,7 @@ var wormState = {
 
     createWorld: function () {
         game.add.image(0, 0, 'wormBG');
+        this.drawRoot();
 
         // *** CREATE OBSTACLES
 
@@ -279,7 +296,31 @@ var wormState = {
         //        this.map.setCollision();
     },
 
-    updatewScore: function (wScore) {
+    drawRoot: function () {
+        var prob = 0.05;
+        var rootX = 30; // This will need to be a variable number that changes as the game is played.
+        var rootY = 0;
+
+        this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root'); // Put down the first block.
+
+        for (i = 0; i < 10; i++) {
+            if (Math.random() < prob) {
+                if (Math.random() <= 0.5) {
+                    rootX -= SQUARESIZE;
+                    prob = 0.05
+                } else {
+                    rootX += SQUARESIZE;
+                    prob = 0.05;
+                }
+            } else {
+                rootY += SQUARESIZE;
+                prob += 0.15;
+            }
+            this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+        }
+    },
+
+    updatewScore: function (wScore) { // This is the "trees planted" score.
         if (this.wScoreLabel) {
             this.wScoreLabel.setText('trees planted: ' + wScore);
         }
