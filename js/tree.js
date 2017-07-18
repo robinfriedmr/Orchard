@@ -3,7 +3,8 @@ var CO2No = 0; // Number of CO2 ingredients present.
 
 var rand1 = -1;
 var rand2 = -1;
-var originalspeed = 600;
+//600
+var originalspeed = 400;
 var speed = originalspeed;
 
 var hits = 0;
@@ -11,6 +12,8 @@ var flip = true;
 
 var nutrientammoOn = false;
 var C02ammoOn = true;
+
+var localScore = 0;
 
 var treeState = {
 
@@ -45,18 +48,25 @@ var treeState = {
         this.growingapple.events.onInputDown.add(this.speedUp, this);
         this.growingapple.events.onInputUp.add(this.release, this);
 
-        treeState.tScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
-            font: '24px Arial',
+        treeState.tScoreLabel = game.add.text(50, 30, 'Trees Planted: 0', {
+            font: '20px Arial',
+            fill: '#ffffff'
+        });
+
+        treeState.localScoreLabel = game.add.text(400, 30, 'Apples Created: 0', {
+            font: '20px Arial',
             fill: '#ffffff'
         });
 
         // Add icons on UI to indicate ingredients
         this.nImage = game.add.image(40, 240, 'nutrient');
+        this.nImage.scale.setTo(1.5, 1.5);
         this.nImage.inputEnabled = true;
         this.nImage.events.onInputDown.add(this.activateNutrientAmmo, this);
 
 
         this.CImage = game.add.image(40, 290, 'CO2');
+        this.CImage.scale.setTo(1.5, 1.5);
         this.CImage.inputEnabled = true;
         this.CImage.events.onInputDown.add(this.activateCO2Ammo, this);
 
@@ -69,6 +79,9 @@ var treeState = {
         nutrientNoText = game.add.text(90, 240, nutrientNo.toString(), textStyle_Nutrient);
         CO2NoText = game.add.text(90, 290, 'Unlimited', textStyle_Nutrient);
 
+        this.bulletSelectBox = game.add.image(100, 300, 'bulletSelect');
+        this.bulletSelectBox.anchor.setTo(0.5, 0.5);
+        this.bulletSelectBox.scale.setTo(1, .4);
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -125,8 +138,6 @@ var treeState = {
         this.growingapple.body.maxVelocity.x = speed;
         this.growingapple.body.maxVelocity.y = speed;
 
-        console.log(hits);
-
 
     },
 
@@ -152,6 +163,9 @@ var treeState = {
             if (hits == 3) {
                 this.growingapple.tint = 0x17E60C;
                 speed = originalspeed;
+                this.appleGet(this.growingapple.x, this.growingapple.y);
+                localScore++;
+                treeState.localScoreLabel.setText("Apples Created: " + localScore);
                 Client.sendApple();
                 hits = 0;
             }
@@ -160,8 +174,14 @@ var treeState = {
 
         if (flip && nutrientammoOn && nutrientNo > 0) {
             console.log("hit with nutrientAmmo");
+            this.appleGet(this.growingapple.x, this.growingapple.y);
+            localScore++;
+            treeState.localScoreLabel.setText("Apples Created: " + localScore);
             Client.sendApple();
             nutrientNo--;
+            if (nutrientNo == 0) {
+                this.activateCO2Ammo();
+            }
             nutrientNoText.text = nutrientNo.toString();
             flip = false;
         }
@@ -172,6 +192,31 @@ var treeState = {
         flip = true;
     },
 
+    appleGet: function (x, y) {
+        this.finishedapple = game.add.sprite(x, y, 'growingapple');
+        this.finishedapple.anchor.setTo(0.5, 0.5);
+        this.finishedapple.scale.setTo(0.5, 0.5);
+        this.finishedapple.tint = 0xE60C0C;
+        game.physics.arcade.enable(this.finishedapple);
+        this.finishedapple.body.setCircle(37.5);
+        var randdirection = Math.random();
+        var randspeed = Math.random();
+        if (randdirection >= .5) {
+            var direction = 1;
+        } else {
+            var direction = -1;
+        }
+        this.finishedapple.body.velocity.x = (originalspeed * 4) * direction * randdirection;
+        this.finishedapple.body.velocity.y = -700;
+        this.finishedapple.body.acceleration.y = 1300;
+
+        this.finishedapple.events.onOutOfBounds.add(this.destroyApple, this);
+    },
+
+    destroyApple: function (apple) {
+        apple.destroy();
+    },
+
     nutrientSupply: function () {
         nutrientNo++;
         nutrientNoText.text = nutrientNo.toString();
@@ -179,12 +224,18 @@ var treeState = {
     },
 
     activateNutrientAmmo: function () {
-        nutrientammoOn = true;
-        C02ammoOn = false;
-        console.log("nutrientAmmoActive");
+        if (nutrientNo > 0) {
+            this.bulletSelectBox.x = 100;
+            this.bulletSelectBox.y = 250;
+            nutrientammoOn = true;
+            C02ammoOn = false;
+            console.log("nutrientAmmoActive");
+        }
     },
 
     activateCO2Ammo: function () {
+        this.bulletSelectBox.x = 100;
+        this.bulletSelectBox.y = 300;
         nutrientammoOn = false;
         C02ammoOn = true;
         console.log("C02AmmoActive");

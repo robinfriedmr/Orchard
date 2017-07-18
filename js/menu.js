@@ -1,6 +1,7 @@
 //Menu
 
 this.myPlayerID = -1;
+this.running = false;
 
 // Create a playerList object. Possible uses for keeping track of data in states. 
 //this.playerList = {};
@@ -21,6 +22,8 @@ var menuState = {
             // Call the function at least once
             this.orientationChange();
         }
+
+        this.running = true;
 
         // Display the name of the game
         var styleTitle = {
@@ -44,16 +47,16 @@ var menuState = {
             });
         startLabel.anchor.setTo(0.5, 0.5);
 
-        this.wormbutton = game.add.button(game.width/2 - 150, game.height / 2 - 25, 'wormbutton', this.askWorm);
-        this.wormx = game.add.sprite(game.width/2 - 150, game.height / 2 - 25, 'x');
+        this.wormbutton = game.add.button(game.width / 2 - 150, game.height / 2 - 25, 'wormbutton', this.askWorm);
+        this.wormx = game.add.sprite(game.width / 2 - 150, game.height / 2 - 25, 'x');
         this.wormx.visible = false;
 
-        this.treebutton = game.add.button(game.width/2 - 25, game.height / 2 - 25, 'treebutton', this.askTree);
-        this.treex = game.add.sprite(game.width/2 - 25, game.height / 2 - 25, 'x');
+        this.treebutton = game.add.button(game.width / 2 - 25, game.height / 2 - 25, 'treebutton', this.askTree);
+        this.treex = game.add.sprite(game.width / 2 - 25, game.height / 2 - 25, 'x');
         this.treex.visible = false;
 
-        this.birdbutton = game.add.button(game.width/2 + 100, game.height / 2 - 25, 'birdbutton', this.askBird);
-        this.birdx = game.add.sprite(game.width/2 + 100, game.height / 2 - 25, 'x');
+        this.birdbutton = game.add.button(game.width / 2 + 100, game.height / 2 - 25, 'birdbutton', this.askBird);
+        this.birdx = game.add.sprite(game.width / 2 + 100, game.height / 2 - 25, 'x');
         this.birdx.visible = false;
 
         // Ask server to create an ID for you.
@@ -75,7 +78,7 @@ var menuState = {
         this.birdPlayer = bird;
         console.log("The players are now set equal to: " + worm + ", " + tree + ", " + bird);
 
-        if (this.wormbutton) { // If menu state is currently running...
+        if (this.running == true) { // If menu state is currently running...
             // If data comes back with a valid ID, don't let the new player choose that option.
             if (this.wormPlayer >= 0) {
                 this.wormx.visible = true;
@@ -118,18 +121,21 @@ var menuState = {
 
     // You can begin this state!
     startWorm: function (id) {
+        this.running = false;
         game.state.start('worm');
         this.wormPlayer = id;
         console.log("You, " + id + ", are wormPlayer.");
     },
 
     startTree: function (id) {
+        this.running = false;
         game.state.start('tree');
         this.treePlayer = id;
         console.log("You, " + id + ", are treePlayer.");
     },
 
     startBird: function (id) {
+        this.running = false;
         game.state.start('bird');
         this.birdPlayer = id;
         console.log("you, " + id + ", are birdPlayer.");

@@ -74,7 +74,7 @@ Client.socket.on('plantSeed', function (seedX) {
 });
 
 Client.socket.on('updateScore', function (score) {
-    wormState.updateScore(score);
+    wormState.updatewScore(score);
     treeState.updateScore(score);
     birdState.updateScore(score);
 });
@@ -98,6 +98,10 @@ Client.socket.on('treeNo', function (data) {
 
 Client.socket.on('birdGo', function (data) {
     menuState.startBird(data);
+});
+
+Client.socket.on('plantRoot', function () {
+    wormState.drawRoot();
 });
 
 Client.socket.on('birdNo', function (data) {
