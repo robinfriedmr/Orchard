@@ -21,33 +21,18 @@ var wormState = {
         // Arrow and space keys
         this.cursor = game.input.keyboard.createCursorKeys();
         this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.wasd = {
+            up: game.input.keyboard.addKey(Phaser.Keyboard.W),
+            down: game.input.keyboard.addKey(Phaser.Keyboard.S),
+            left: game.input.keyboard.addKey(Phaser.Keyboard.A),
+            right: game.input.keyboard.addKey(Phaser.Keyboard.D)
+        };
 
         // Define roots
         this.roots = [];
 
         // Add map 
         this.createWorld();
-
-        // Score labels
-        this.wScoreLabel = game.add.text(game.width - 12, game.height - 10, 'trees planted: 0', {
-            font: '16px Arial',
-            fill: '#ffffff'
-        });
-        this.wScoreLabel.anchor.setTo(1, 1);
-
-        this.devoured = 0;
-        decayDevoured = game.add.text(game.width / 2, game.height - 10, 'decay devoured: ' + this.devoured, {
-            font: '16px Arial',
-            fill: '#ffffff'
-        });
-        decayDevoured.anchor.setTo(0.5, 1);
-
-        this.delivered = 0;
-        nutrientsDelivered = game.add.text(12, game.height - 10, 'nutrients delivered: ' + this.delivered, {
-            font: '16px Arial',
-            fill: '#ffffff'
-        });
-        nutrientsDelivered.anchor.setTo(0, 1);
 
         worm = []; // This will work as a stack, containing the parts of our worm
         decay = []; // An array for the decay.
@@ -67,6 +52,27 @@ var wormState = {
             worm[i] = game.add.sprite(150 + i * SQUARESIZE, 150, 'wormsquare');
         }
 
+        // Score labels
+        this.wScoreLabel = game.add.text(game.width - 12, game.height - 10, 'Trees Planted: 0', {
+            font: '16px Arial',
+            fill: '#ffffff'
+        });
+        this.wScoreLabel.anchor.setTo(1, 1);
+
+        this.devoured = 0;
+        decayDevoured = game.add.text(game.width / 2, game.height - 10, 'Held Decay: ' + this.devoured, {
+            font: '16px Arial',
+            fill: '#ffffff'
+        });
+        decayDevoured.anchor.setTo(0.5, 1);
+
+        this.delivered = 0;
+        nutrientsDelivered = game.add.text(12, game.height - 10, 'Nutrients Delivered: ' + this.delivered, {
+            font: '16px Arial',
+            fill: '#ffffff'
+        });
+        nutrientsDelivered.anchor.setTo(0, 1);
+          
         // Enable overlap physics.
         game.physics.arcade.enable(worm, Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
@@ -110,13 +116,13 @@ var wormState = {
         var firstCell = worm[worm.length - 1];
 
         // Use the arrow keys to determine the worm's new direction, while preventing illegal directions.
-        if (this.cursor.right.isDown && direction != 'left' && firstCell.x < (game.width - SQUARESIZE)) {
+        if ((this.cursor.right.isDown || this.wasd.right.isDown) && direction != 'left' && firstCell.x < (game.width - SQUARESIZE)) {
             new_direction = 'right';
-        } else if (this.cursor.left.isDown && direction != 'right' && firstCell.x > SQUARESIZE) {
+        } else if ((this.cursor.left.isDown || this.wasd.left.isDown) && direction != 'right' && firstCell.x > SQUARESIZE) {
             new_direction = 'left';
-        } else if (this.cursor.up.isDown && direction != 'down' && firstCell.y > 0) {
+        } else if ((this.cursor.up.isDown || this.wasd.up.isDown) && direction != 'down' && firstCell.y > 0) {
             new_direction = 'up';
-        } else if (this.cursor.down.isDown && direction != 'up' && firstCell.y < (game.height - SQUARESIZE)) {
+        } else if ((this.cursor.down.isDown || this.wasd.down.isDown) && direction != 'up' && firstCell.y < (game.height - SQUARESIZE)) {
             new_direction = 'down';
         }
 
@@ -219,26 +225,27 @@ var wormState = {
     },
 
     decayCollision: function (firstCell) {
-        for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching
-            for (var j = 0; j < decay.length; j++) { // any of the pieces of decay
-                if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) {
+        if (holding < 5) {
+            for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching
+                for (var j = 0; j < decay.length; j++) { // any of the pieces of decay
+                    if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) {
 
-                    // Destroy the old decay.
-                    decay[j].destroy();
-                    // Remove from array (1 element at index j)
-                    decay.splice(j, 1);
+                        // Destroy the old decay.
+                        decay[j].destroy();
+                        // Remove from array (1 element at index j)
+                        decay.splice(j, 1);
 
-                    holding++; // How many nutrients are we holding?
-                    console.log("Holding " + holding);
+                        holding++; // How many nutrients are we holding?
+                        console.log("Holding " + holding);
 
-                    // Reduce the counter / speed up the worm.
-                    if (speedModifier > -8) {
-                        speedModifier -= 2;
-                        console.log(speedModifier);
+                        // Reduce the counter / speed up the worm.
+                        if (speedModifier > -8) {
+                            speedModifier -= 2;
+                            console.log(speedModifier);
+                        }
+                        // Increase the devoured variable by 1
+                        this.updateBelly(holding);
                     }
-                    // Increase the devoured variable by 1
-                    this.devoured++;
-                    this.updateDevoured(this.devoured);
                 }
             }
         }
@@ -259,6 +266,7 @@ var wormState = {
         if (isClicked == true && holding > 0) {
             holding--;
             console.log("Now holding " + holding);
+            this.updateBelly(holding);
 
             nutrient[nutrient.length] = game.add.sprite(x, y, 'nutrient');
             Client.sendNutrient();
@@ -341,7 +349,7 @@ var wormState = {
         } else { // 60% chance to spawn from the top
             here = 'top';
         }
-        
+
         var whichSpot = Math.random();
 
         switch (here) { // Once the side has been decided on, go to that side and...
@@ -355,7 +363,7 @@ var wormState = {
                     var rootX = B.x;
                     var rootY = B.y;
                 }
-                
+
                 // Place the base accordingly.
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
 
@@ -387,9 +395,9 @@ var wormState = {
                 }
 
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
-                
+
                 var prob = 0.15;
-                
+
                 for (i = 0; i < 10; i++) {
                     if (Math.random() < prob) {
                         rootY += SQUARESIZE;
@@ -406,7 +414,7 @@ var wormState = {
 
             case 'top':
                 console.log("top");
-                
+
                 if (whichSpot < 0.25) {
                     var rootX = C.x;
                     var rootY = C.y;
@@ -420,7 +428,7 @@ var wormState = {
                     var rootX = F.x;
                     var rootY = F.y;
                 }
-                
+
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
 
                 var prob = 0.05;
@@ -445,16 +453,16 @@ var wormState = {
 
     updatewScore: function (wScore) { // This is the "trees planted" score.
         if (this.wScoreLabel) {
-            this.wScoreLabel.setText('trees planted: ' + wScore);
+            this.wScoreLabel.setText('Trees Planted: ' + wScore);
         }
     },
 
-    updateDevoured: function (devoured) {
-        decayDevoured.setText('decay devoured: ' + devoured);
+    updateBelly: function (holding) {
+        decayDevoured.setText('Held Decay: ' + holding);
     },
 
     updateDelivered: function (delivered) {
-        nutrientsDelivered.setText('nutrients delivered: ' + delivered);
+        nutrientsDelivered.setText('Nutrients Delivered: ' + delivered);
     },
 
     // ****************** MOBILE FUNCTIONS *****************
