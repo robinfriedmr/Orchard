@@ -134,7 +134,7 @@ io.on('connection', function (socket) {
         });
         
         socket.on('sendDecay', function (data) {
-            console.log("server has decaying apple, quantity x" + data); 
+            console.log("server has decaying apple, quantity " + data); 
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('receiveDecay', data);
             }

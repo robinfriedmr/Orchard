@@ -228,13 +228,11 @@ var wormState = {
                     // Remove from array (1 element at index j)
                     decay.splice(j, 1);
 
-                    // Send a nutrient to the server.
-                    Client.sendNutrient();
                     holding++; // How many nutrients are we holding?
                     console.log("Holding " + holding);
 
                     // Reduce the counter / speed up the worm.
-                    if (speedModifier > -9) {
+                    if (speedModifier > -8) {
                         speedModifier -= 2;
                         console.log(speedModifier);
                     }
@@ -263,6 +261,7 @@ var wormState = {
             console.log("Now holding " + holding);
 
             nutrient[nutrient.length] = game.add.sprite(x, y, 'nutrient');
+            Client.sendNutrient();
             this.delivered++;
             this.updateDelivered(this.delivered);
 
@@ -309,37 +308,47 @@ var wormState = {
         };
         // TOP
         var C = {
-            x: 195,
+            x: 30,
             y: 0
         };
         var D = {
-            x: game.width - 195,
+            x: 195,
             y: 0
         };
-        // RIGHT
         var E = {
+            x: game.width - 195,
+            y: 0
+        }
+        var F = {
+            x: game.width - 30 - SQUARESIZE,
+            y: 0
+        }
+        // RIGHT
+        var G = {
             x: game.width - SQUARESIZE,
             y: 120
         };
-        var F = {
+        var H = {
             x: game.width - SQUARESIZE,
             y: 210
         }; // *************************************
 
-        var whichSpot = birdState.getRandomInt(0, 10); // Choose where to spawn the root.
-        if (whichSpot <= 1) { // 20% chance to spawn on the left
+        var whichSide = birdState.getRandomInt(0, 10); // Choose where to spawn the root.
+        if (whichSide <= 1) { // 20% chance to spawn on the left
             here = 'left';
-        } else if (whichSpot >= 8) { // 20% chance to spawn on the right
+        } else if (whichSide >= 8) { // 20% chance to spawn on the right
             here = 'right';
         } else { // 60% chance to spawn from the top
             here = 'top';
         }
+        
+        var whichSpot = Math.random();
 
         switch (here) { // Once the side has been decided on, go to that side and...
             case 'left': // ...choose between which two positions the root will go. 
                 console.log("left");
 
-                if (Math.random() < 0.5) {
+                if (whichSpot < 0.5) {
                     var rootX = A.x;
                     var rootY = A.y;
                 } else {
@@ -369,12 +378,12 @@ var wormState = {
             case 'right':
                 console.log("right");
 
-                if (Math.random() < 0.5) {
-                    var rootX = E.x;
-                    var rootY = E.y;
+                if (whichSpot < 0.5) {
+                    var rootX = G.x;
+                    var rootY = G.y;
                 } else {
-                    var rootX = F.x;
-                    var rootY = F.y;
+                    var rootX = H.x;
+                    var rootY = H.y;
                 }
 
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
@@ -398,12 +407,18 @@ var wormState = {
             case 'top':
                 console.log("top");
                 
-                if (Math.random() < 0.5) {
+                if (whichSpot < 0.25) {
                     var rootX = C.x;
                     var rootY = C.y;
-                } else {
+                } else if (whichSpot >= 0.25 && whichSpot < 0.5) {
                     var rootX = D.x;
                     var rootY = D.y;
+                } else if (whichSpot >= 0.5 && whichSpot < 0.75) {
+                    var rootX = E.x;
+                    var rootY = E.y;
+                } else {
+                    var rootX = F.x;
+                    var rootY = F.y;
                 }
                 
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
