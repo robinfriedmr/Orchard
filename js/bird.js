@@ -67,9 +67,9 @@ var birdState = {
         game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
 
         // For debug.
-        if (this.wasCalledToggle.isDown && wasCalled == true) {
-            wasCalled = false; // Toggle wasCalled back to false.
-            console.log("wasCalled is now " + wasCalled);
+        if (this.wasCalledToggle.isDown && wasCalledB == true) {
+            wasCalledB = false; // Toggle wasCalled back to false.
+            console.log("wasCalled is now " + wasCalledB);
         }
         this.debugDrop();
 
@@ -233,9 +233,9 @@ var birdState = {
     },
 
     debugDrop: function () {
-        if (!wasCalled && this.debugAppleDrop.isDown && appleEaten == false) {
-            wasCalled = true;
-            console.log("wasCalled is now " + wasCalled);
+        if (!wasCalledB && this.debugAppleDrop.isDown && appleEaten == false) {
+            wasCalledB = true;
+            console.log("wasCalled is now " + wasCalledB);
             this.appleDrop();
         }
     },

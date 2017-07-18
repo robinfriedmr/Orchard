@@ -74,6 +74,10 @@ Client.socket.on('plantSeed', function (seedX) {
     birdState.plantSeed(seedX);
 });
 
+Client.socket.on('plantRoot', function () {
+    wormState.drawRoot(); 
+});
+
 Client.socket.on('updateScore', function (score) {
     wormState.updatewScore(score);
     treeState.updateScore(score);

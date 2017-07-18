@@ -297,26 +297,87 @@ var wormState = {
     },
 
     drawRoot: function () {
-        var prob = 0.05;
-        var rootX = 30; // This will need to be a variable number that changes as the game is played.
-        var rootY = 0;
 
-        this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root'); // Put down the first block.
+    var whichSpot = birdState.getRandomInt(0, 10);
 
-        for (i = 0; i < 10; i++) {
-            if (Math.random() < prob) {
-                if (Math.random() <= 0.5) {
-                    rootX -= SQUARESIZE;
-                    prob = 0.05
-                } else {
-                    rootX += SQUARESIZE;
-                    prob = 0.05;
+        if (whichSpot <= 1) {
+            here = 'left';
+        } else if (whichSpot >= 8) {
+            here = 'right';
+        } else {
+            here = 'top';
+        }
+
+        switch (here) {
+            case 'left':
+                console.log("left");
+
+                var prob = 0.15;
+                var rootX = 0;
+                var rootY = 195;
+
+                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+
+                for (i = 0; i < 10; i++) {
+                    if (Math.random() < prob) {
+                        rootY += SQUARESIZE;
+                        prob = 0.15;
+                    } else {
+                        rootX += SQUARESIZE;
+                        prob += 0.15;
+                    }
+
+                    this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
                 }
-            } else {
-                rootY += SQUARESIZE;
-                prob += 0.15;
-            }
-            this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+
+                break;
+
+            case 'right':
+                console.log("right");
+
+                var prob = 0.15;
+                var rootX = game.width - SQUARESIZE;
+                var rootY = 195;
+
+                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+
+                for (i = 0; i < 10; i++) {
+                    if (Math.random() < prob) {
+                        rootY += SQUARESIZE;
+                        prob = 0.15;
+                    } else {
+                        rootX -= SQUARESIZE;
+                        prob += 0.15;
+                    }
+
+                    this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+                }
+
+                break;
+
+            case 'top':
+                console.log("top");
+                var prob = 0.05;
+                var rootX = 30; // This will need to be a variable number that changes as the game is played.
+                var rootY = 0;
+
+                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root'); // Put down the first block.
+
+                for (i = 0; i < 10; i++) {
+                    if (Math.random() < prob) {
+                        if (Math.random() <= 0.5) {
+                            rootX -= SQUARESIZE;
+                            prob = 0.05
+                        } else {
+                            rootX += SQUARESIZE;
+                            prob = 0.05;
+                        }
+                    } else {
+                        rootY += SQUARESIZE;
+                        prob += 0.15;
+                    }
+                    this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+                }
         }
     },
 
