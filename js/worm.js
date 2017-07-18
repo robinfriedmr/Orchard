@@ -5,7 +5,7 @@
 var isClicked = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
 var worm, decay, nutrient, holding,
-    speed, collisionCounter,
+    speed, speedModifier,
     updateDelayW, direction, new_direction;
 
 const SQUARESIZE = 15;
@@ -54,7 +54,7 @@ var wormState = {
         nutrient = []; // An array for deposited nutrients.
         holding = 0; // A counter for how much the worm is carrying at a given time. 
         speed = 0; // Game speed.
-        collisionCounter = 0; // Number of times collided with self or wall.        
+        speedModifier = 0; // Number of times collided with self or wall.        
         updateDelayW = 0; // A variable for control over update rates.
         direction = 'right'; // The direction of our worm.
         new_direction = null; // A buffer to store the new direction into.
@@ -120,8 +120,8 @@ var wormState = {
             new_direction = 'down';
         }
 
-        collisionCounter = Math.min(10, collisionCounter); // Set the collision counter to at most 10.
-        speed = Math.min(10, collisionCounter); // Modulate speed based on the collision counter.
+        speedModifier = Math.min(10, speedModifier); // Set the collision counter to at most 10.
+        speed = Math.min(10, speedModifier); // Modulate speed based on the collision counter.
 
         // Run this code every 10 (to 20) runs through "update," unless sped up.
         updateDelayW++;
@@ -169,20 +169,20 @@ var wormState = {
     wallCollision: function (head) {
         if (direction == 'right' && head.x == (game.width - SQUARESIZE)) {
             new_direction = 'up';
-            collisionCounter++;
-            console.log(collisionCounter);
+            speedModifier++;
+            console.log(speedModifier);
         } else if (direction == 'left' && head.x == 0) {
             new_direction = 'down';
-            collisionCounter++;
-            console.log(collisionCounter);
+            speedModifier++;
+            console.log(speedModifier);
         } else if (direction == 'up' && head.y == 0) {
             new_direction = 'left';
-            collisionCounter++;
-            console.log(collisionCounter);
+            speedModifier++;
+            console.log(speedModifier);
         } else if (direction == 'down' && head.y == (game.height - SQUARESIZE)) {
             new_direction = 'right';
-            collisionCounter++;
-            console.log(collisionCounter);
+            speedModifier++;
+            console.log(speedModifier);
         }
     },
 
@@ -190,8 +190,8 @@ var wormState = {
         // Check if the head of the worm overlaps with any part of the worm.
         for (var i = 0; i < worm.length - 1; i++) {
             if (head.x == worm[i].x && head.y == worm[i].y) {
-                collisionCounter++;
-                console.log(collisionCounter);
+                speedModifier++;
+                console.log(speedModifier);
             }
         }
     },
@@ -200,8 +200,8 @@ var wormState = {
         // Check if the head of the worm overlaps with any roots.
         for (var i = 0; i < this.roots.length - 1; i++) {
             if (head.x == this.roots[i].x && head.y == this.roots[i].y) {
-                collisionCounter++;
-                console.log(collisionCounter);
+                speedModifier++;
+                console.log(speedModifier);
             }
         }
     },
@@ -234,9 +234,9 @@ var wormState = {
                     console.log("Holding " + holding);
 
                     // Reduce the counter / speed up the worm.
-                    if (collisionCounter > -3) {
-                        collisionCounter--;
-                        console.log(collisionCounter);
+                    if (speedModifier > -9) {
+                        speedModifier -= 2;
+                        console.log(speedModifier);
                     }
                     // Increase the devoured variable by 1
                     this.devoured++;
@@ -267,6 +267,7 @@ var wormState = {
             this.updateDelivered(this.delivered);
 
             isClicked = false;
+            speedModifier += 2; // Slow down for every nutrient depositied
         }
     },
 
@@ -284,8 +285,6 @@ var wormState = {
         game.add.image(0, 0, 'wormBG');
         this.drawRoot();
 
-        // *** CREATE OBSTACLES
-
         //        this.map = game.add.tilemap('dmap');
         //        this.map.addTilesetImage('tiles');
         //        this.layer = this.map.createLayer('Tile Layer 1');
@@ -298,25 +297,60 @@ var wormState = {
 
     drawRoot: function () {
 
-    var whichSpot = birdState.getRandomInt(0, 10);
+        // *** BASE POSITIONS FOR ROOTS *********** 
+        // LEFT
+        var A = {
+            x: 0,
+            y: 210
+        };
+        var B = {
+            x: 0,
+            y: 120
+        };
+        // TOP
+        var C = {
+            x: 195,
+            y: 0
+        };
+        var D = {
+            x: game.width - 195,
+            y: 0
+        };
+        // RIGHT
+        var E = {
+            x: game.width - SQUARESIZE,
+            y: 120
+        };
+        var F = {
+            x: game.width - SQUARESIZE,
+            y: 210
+        }; // *************************************
 
-        if (whichSpot <= 1) {
+        var whichSpot = birdState.getRandomInt(0, 10); // Choose where to spawn the root.
+        if (whichSpot <= 1) { // 20% chance to spawn on the left
             here = 'left';
-        } else if (whichSpot >= 8) {
+        } else if (whichSpot >= 8) { // 20% chance to spawn on the right
             here = 'right';
-        } else {
+        } else { // 60% chance to spawn from the top
             here = 'top';
         }
 
-        switch (here) {
-            case 'left':
+        switch (here) { // Once the side has been decided on, go to that side and...
+            case 'left': // ...choose between which two positions the root will go. 
                 console.log("left");
 
-                var prob = 0.15;
-                var rootX = 0;
-                var rootY = 195;
-
+                if (Math.random() < 0.5) {
+                    var rootX = A.x;
+                    var rootY = A.y;
+                } else {
+                    var rootX = B.x;
+                    var rootY = B.y;
+                }
+                
+                // Place the base accordingly.
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+
+                var prob = 0.15; // The probability of turning left or right starts at 15%.                
 
                 for (i = 0; i < 10; i++) {
                     if (Math.random() < prob) {
@@ -335,12 +369,18 @@ var wormState = {
             case 'right':
                 console.log("right");
 
-                var prob = 0.15;
-                var rootX = game.width - SQUARESIZE;
-                var rootY = 195;
+                if (Math.random() < 0.5) {
+                    var rootX = E.x;
+                    var rootY = E.y;
+                } else {
+                    var rootX = F.x;
+                    var rootY = F.y;
+                }
 
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
-
+                
+                var prob = 0.15;
+                
                 for (i = 0; i < 10; i++) {
                     if (Math.random() < prob) {
                         rootY += SQUARESIZE;
@@ -357,11 +397,18 @@ var wormState = {
 
             case 'top':
                 console.log("top");
-                var prob = 0.05;
-                var rootX = 30; // This will need to be a variable number that changes as the game is played.
-                var rootY = 0;
+                
+                if (Math.random() < 0.5) {
+                    var rootX = C.x;
+                    var rootY = C.y;
+                } else {
+                    var rootX = D.x;
+                    var rootY = D.y;
+                }
+                
+                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
 
-                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root'); // Put down the first block.
+                var prob = 0.05;
 
                 for (i = 0; i < 10; i++) {
                     if (Math.random() < prob) {
