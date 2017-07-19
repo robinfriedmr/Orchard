@@ -28,6 +28,9 @@ var bootState = {
         game.load.spritesheet('bird', 'assets/img/bird.png', 50, 60);
         game.load.image('seeds', 'assets/img/seeds.png');
 
+        game.load.audio('pop', 'assets/audio/pop.wav');
+        game.load.audio('swoosh', 'assets/audio/swoosh.wav');
+
         //Tiles is universal. Dmap is for the dirt level.
         //        game.load.image('tiles', 'assets/tiles.png');
         //        game.load.tilemap('dmap', 'assets/dmap.json', null, Phaser.Tilemap.TILED_JSON);

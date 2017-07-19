@@ -9,6 +9,7 @@ var speed = originalspeed;
 
 var hits = 0;
 var flip = true;
+var flip2 = true;
 
 var nutrientammoOn = false;
 var C02ammoOn = true;
@@ -105,6 +106,9 @@ var treeState = {
 
         game.time.events.loop(Phaser.Timer.SECOND, this.growingappleProperties, this);
 
+        this.popSound = game.add.audio('pop');
+        this.swooshSound = game.add.audio('swoosh');
+
     },
 
     update: function () {
@@ -153,10 +157,18 @@ var treeState = {
             console.log("hit with CO2Ammo");
             hits++;
             if (hits == 1) {
+//                if (flip2) {
+    //                    this.swooshSound.play();
+    //                    flip2 = false;
+    //                }
                 this.growingapple.tint = 0xE6B70C;
                 speed = speed * 2;
             }
             if (hits == 2) {
+//                if (flip2) {
+//                    this.swooshSound.play();
+//                    flip2 = false;
+//                }
                 this.growingapple.tint = 0xE60C0C;
                 speed = speed * 2;
             }
@@ -164,6 +176,7 @@ var treeState = {
                 this.growingapple.tint = 0x17E60C;
                 speed = originalspeed;
                 this.appleGet(this.growingapple.x, this.growingapple.y);
+                this.popSound.play();
                 localScore++;
                 treeState.localScoreLabel.setText("Apples Created: " + localScore);
                 Client.sendApple();
@@ -175,6 +188,7 @@ var treeState = {
         if (flip && nutrientammoOn && nutrientNo > 0) {
             console.log("hit with nutrientAmmo");
             this.appleGet(this.growingapple.x, this.growingapple.y);
+            this.popSound.play();
             localScore++;
             treeState.localScoreLabel.setText("Apples Created: " + localScore);
             Client.sendApple();
@@ -190,6 +204,7 @@ var treeState = {
 
     release: function () {
         flip = true;
+        flip2 = true;
     },
 
     appleGet: function (x, y) {
