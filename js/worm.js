@@ -2,7 +2,7 @@
 
 // This game is an amalgamation of original code, code inspired by the Discover Phaser tutorial, and Danny Markov's "Making Your First HTML5 Game With Phaser" tutorial on tutorialzine.com.
 
-var isClicked = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
+var isPressed = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
 var worm, decay, nutrient, holding,
     speed, speedModifier,
@@ -20,7 +20,7 @@ var wormState = {
 
         // Arrow and space keys
         this.cursor = game.input.keyboard.createCursorKeys();
-        this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.depositButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         this.wasd = {
             up: game.input.keyboard.addKey(Phaser.Keyboard.W),
             down: game.input.keyboard.addKey(Phaser.Keyboard.S),
@@ -99,16 +99,26 @@ var wormState = {
             // Call the function at least once
             this.orientationChange();
         }
-
+        
         game.input.onDown.add(this.makeTrue, this);
     },
 
     update: function () {
-        //This is meant to allow a nutrient to be dropped only on a mouse-click. 
-        if (!game.input.activePointer.leftButton.isDown) {
+        //This is meant to allow a nutrient to be dropped only on a spacebar press. 
+        if (this.depositButton.onUp) {
+            this.makeTrue();
+            
+        }
+        
+        if (!this.depositButton.isDown) {
             this.makeFalse();
             wasCalled = false;
         }
+        
+//        if (!game.input.activePointer.leftButton.isDown) {
+//            this.makeFalse();
+//            wasCalled = false;
+//        }
 
         // Is the worm over the goal? 
         game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
@@ -252,18 +262,18 @@ var wormState = {
     },
 
     makeTrue: function () {
-        isClicked = true;
+        isPressed = true;
     },
 
     makeFalse: function () {
-        isClicked = false;
+        isPressed = false;
     },
 
     depositNutrient: function () {
         x = worm[0].x;
         y = worm[0].y;
 
-        if (isClicked == true && holding > 0) {
+        if (isPressed == true && holding > 0) {
             holding--;
             console.log("Now holding " + holding);
             this.updateBelly(holding);
@@ -273,7 +283,7 @@ var wormState = {
             this.delivered++;
             this.updateDelivered(this.delivered);
 
-            isClicked = false;
+            isPressed = false;
             speedModifier += 2; // Slow down for every nutrient depositied
         }
     },
