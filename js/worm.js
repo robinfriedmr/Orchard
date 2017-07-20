@@ -2,7 +2,7 @@
 
 // This game is an amalgamation of original code, code inspired by the Discover Phaser tutorial, and Danny Markov's "Making Your First HTML5 Game With Phaser" tutorial on tutorialzine.com.
 
-var isPressed = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
+var isPressed = true; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
 var worm, decay, nutrient, holding,
     speed, speedModifier,
@@ -72,7 +72,7 @@ var wormState = {
             fill: '#ffffff'
         });
         nutrientsDelivered.anchor.setTo(0, 1);
-          
+
         // Enable overlap physics.
         game.physics.arcade.enable(worm, Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
@@ -99,28 +99,18 @@ var wormState = {
             // Call the function at least once
             this.orientationChange();
         }
-        
-        game.input.onDown.add(this.makeTrue, this);
+
+        //       game.input.onDown.add(this.makeTrue, this); // CODE FOR CLICKING.
     },
 
     update: function () {
-        //This is meant to allow a nutrient to be dropped only on a spacebar press. 
-        if (this.depositButton.onUp) {
-            this.makeTrue();
-            
-        }
-        
-        if (!this.depositButton.isDown) {
-            this.makeFalse();
-            wasCalled = false;
-        }
-        
-//        if (!game.input.activePointer.leftButton.isDown) {
-//            this.makeFalse();
-//            wasCalled = false;
-//        }
 
-        // Is the worm over the goal? 
+        //        if (!game.input.activePointer.leftButton.isDown) { // CODE FOR CLICKING.
+        //            this.makeFalse();
+        //            wasCalled = false;
+        //        }
+
+        // Is the worm's end over the goal? 
         game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
 
         var firstCell = worm[worm.length - 1];
@@ -261,38 +251,38 @@ var wormState = {
         }
     },
 
-    makeTrue: function () {
-        isPressed = true;
-    },
-
-    makeFalse: function () {
-        isPressed = false;
-    },
-
     depositNutrient: function () {
         x = worm[0].x;
         y = worm[0].y;
 
-        if (isPressed == true && holding > 0) {
-            holding--;
-            console.log("Now holding " + holding);
-            this.updateBelly(holding);
+        if (this.depositButton.isDown && holding > 0) {
+            if (isPressed == true) {
+                
+                holding--;
+                console.log("Now holding " + holding);
+                this.updateBelly(holding);
 
-            nutrient[nutrient.length] = game.add.sprite(x, y, 'nutrient');
-            Client.sendNutrient();
-            this.delivered++;
-            this.updateDelivered(this.delivered);
-
-            isPressed = false;
-            speedModifier += 2; // Slow down for every nutrient depositied
+                nutrient[nutrient.length] = game.add.sprite(x, y, 'nutrient');
+                Client.sendNutrient();
+                this.delivered++;
+                this.updateDelivered(this.delivered);
+                
+                speedModifier += 2; // Slow down for every nutrient depositied
+                isPressed = false; // Set isPressed to false. This block can only run again when it's true.
+            }
         }
+
+        if (this.depositButton.isUp) {
+            isPressed = true; // Setting this to true only when the button is up makes the above block run only once.
+        }
+
     },
 
     //    eraseNutrient: function () {
     //        console.log(this.nutrientArray.length);
     //        //console.log("A nutrient is erased.");
     //
-    //        which = birdState.getRandomInt(0, this.nutrientArray.length);
+    //        which = birdState.getRandomInt(1, this.nutrientArray.length);
     //        this.nutrientArray.splice(which - 1, 1);
     //
     //        console.log(this.nutrientArray.length);
