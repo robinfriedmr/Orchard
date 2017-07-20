@@ -3,6 +3,8 @@ var appleEaten = false;
 
 var flip = true;
 
+var trashArray = [];
+
 var birdState = {
 
     create: function () {
@@ -28,16 +30,22 @@ var birdState = {
         // Add pooped seed emitter.
         this.emitter = game.add.emitter(55, 55, 10);
         this.emitter.makeParticles('seeds');
-        this.emitter.gravity = 555;
+        this.emitter.gravity = 555
 
         // Add sprites to the game.
         this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
         this.birdplayer.frame = 1;
         this.birdplayer.anchor.setTo(0.5, 0.5);
 
+        for (i = 0; i < 5; i++) {
+            this.makeTrash();
+        }
+
         // Enable physics on the sprites' bodies.
         game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
         this.birdplayer.body.gravity.y = 1000;
+        // this.birdplayer.body.mass = 10; // ************
+        this.birdplayer.body.setSize(40, 60)
         this.birdplayer.body.collideWorldBounds = true;
 
         // The arrow keys will only ever affect the game, not the browswer window.
@@ -67,6 +75,8 @@ var birdState = {
     update: function () {
 
         game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
+        game.physics.arcade.collide(this.birdplayer, trashArray);
+        game.physics.arcade.collide(trashArray, trashArray);
 
         // For debug.
         if (this.wasCalledToggle.isDown && wasCalledB == true) {
@@ -137,24 +147,25 @@ var birdState = {
     },
 
     dump: function (x, y) {
+        //if (this.birdplayer.body.onFloor()) { // boolean that evaluates if the bird player is on the bottom of the world
         this.birdplayer.frame = 1;
         appleEaten = false;
 
-        this.emitter.x = x;
+        this.emitter.x = x - 5;
         this.emitter.y = y + 50;
 
         this.emitter.start(true, 1000, null, 10);
 
-        Client.sendDecay();
-        Client.sendDecay();
-        Client.sendDecay();
-        Client.sendDecay();
-        Client.sendDecay();
+        for (i = 0; i < 5; i++) {
+            Client.sendDecay();
+        }
         Client.sendSeed(this.birdplayer.x);
+        //}
     },
 
     plantSeed: function (seedX) {
-        game.add.image(seedX, game.height - 25, 'nutrient');
+        game.add.image(seedX, game.height - 15, 'nutrient');
+
     },
 
     updateScore: function (bScore) {
@@ -178,22 +189,36 @@ var birdState = {
     },
 
     createWorld: function () {
-        //        // Create the tilemap
-        //        this.map = game.add.tilemap('map');
-        //        // Add the tileset to the map
-        //        this.map.addTilesetImage('tiles');
-        //        // Create the layer by specifying the name of the Tiled layer
-        //        this.layer = this.map.createLayer('Tile Layer 1');
-
-        //        // Set the world size to match the size of the layer
-        //        this.layer.resizeWorld();
-        //        // Enable collisions for the first tilset element (the blue wall)
-        //        this.map.setCollision([3, 4]);
         this.bg = game.add.image(0, 0, 'birdBG');
-        this.bg.inputEnabled = true; // allow the click/tap event to actually do something
+
+        this.platforms = this.add.physicsGroup(); // create physics group for the ground
+        this.platforms.create(0, game.height - 5, 'ground'); // create the ground
+        this.platforms.setAll('body.allowGravity', false); // set 
+        this.platforms.setAll('body.immovable', true); // its
+        this.platforms.setAll('body.velocity.x', 100); // properties
+        this.platforms.setAll('body.friction.x', 1);
+        
+        //this.bg.inputEnabled = true; // allow the click/tap event to actually do something
 
         game.physics.arcade.gravity.y = 500; //world gravity
+    },
 
+    makeTrash: function () {
+        var randomX = Math.floor(Math.random() * 600);
+        var aPiece = game.add.sprite(randomX, game.height - 50, 'trash');
+        trashArray[trashArray.length] = aPiece;
+
+        game.physics.arcade.enable(aPiece, Phaser.Physics.ARCADE);
+
+        aPiece.body.gravity.y = 5;
+        aPiece.body.moves = true;
+        aPiece.body.mass = 10;
+        aPiece.body.velocity.setTo(200, 200);
+
+        aPiece.body.drag.x = 1;
+        aPiece.body.friction.x = 1;
+        aPiece.body.collideWorldBounds = true;
+        aPiece.body.bounce.set(0.5, 0.25);
     },
 
     movePlayer: function () {
@@ -234,10 +259,6 @@ var birdState = {
         }
     },
 
-    startMenu: function () {
-        game.state.start('menu');
-    },
-
     debugDrop: function () {
         if (!wasCalledB && this.debugAppleDrop.isDown && appleEaten == false) {
             wasCalledB = true;
@@ -246,12 +267,9 @@ var birdState = {
         }
     },
 
-
     // ****************** MOBILE FUNCTIONS *****************
     addMobileInputs: function () {
-
         // this.bg.events.onInputDown.add(this.jump, this);
-
     },
 
     orientationChange: function () {

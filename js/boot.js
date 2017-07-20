@@ -22,7 +22,9 @@ var bootState = {
         game.load.image('bulletSelect', ' assets/img/bulletSelect.png');
 
         game.load.spritesheet('bird', 'assets/img/bird.png', 50, 60);
+        game.load.image('ground', 'assets/img/ground.png');
         game.load.image('seeds', 'assets/img/seeds.png');
+        game.load.image('trash', 'assets/img/doritos.png');
     },
 
     create: function () {
