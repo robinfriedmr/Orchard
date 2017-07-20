@@ -110,15 +110,8 @@ var birdState = {
     destroyFallenApple: function () {
         this.fallingApple.alive = false;
         this.fallingApple.destroy();
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-        Client.sendDecay(1);
-=======
-=======
->>>>>>> merged-games
         Client.sendDecay();
->>>>>>> austinbranch
     },
 
     appleDrop: function () {
@@ -164,21 +157,10 @@ var birdState = {
 
         this.emitter.start(true, 1000, null, 10);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        Client.sendDecay(5);
-=======
-        Client.sendDecay();
-        Client.sendDecay();
-        Client.sendDecay();
-        Client.sendDecay();
-        Client.sendDecay();
->>>>>>> austinbranch
-=======
         for (i = 0; i < 5; i++) {
             Client.sendDecay();
         }
->>>>>>> merged-games
+
         Client.sendSeed(this.birdplayer.x);
         //}
     },

@@ -28,7 +28,7 @@ const BIRD_GAME = 2;
 
 httpServer.score = 0;
 
-httpServer.listen(8090, function () {
+httpServer.listen(8152, function () {
     console.log('Listening on ' + httpServer.address().port);
 });
 
@@ -132,18 +132,9 @@ io.on('connection', function (socket) {
                 socket.to(playerMap[BIRD_GAME]).emit('receiveApple');
             }
         });
-<<<<<<< HEAD
-        
-        socket.on('sendDecay', function (data) {
-<<<<<<< HEAD
-            console.log("server has decaying apple, quantity " + data); 
-=======
 
         socket.on('sendDecay', function () {
             console.log("server has the bird's decaying apple");
->>>>>>> austinbranch
-=======
->>>>>>> merged-games
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('receiveDecay');
             }
@@ -152,9 +143,6 @@ io.on('connection', function (socket) {
         // Score!
         socket.on('sendSeed', function (seedX) {
             console.log("Server has the seed, at " + seedX);
-            if (playerMap[WORM_GAME] != -1) {
-                socket.to(playerMap[WORM_GAME]).emit('plantRoot');
-            }
             socket.emit('plantSeed', seedX); // tell the birdplayer to plant the seed
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('plantRoot');
