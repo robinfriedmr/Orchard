@@ -135,14 +135,17 @@ io.on('connection', function (socket) {
 <<<<<<< HEAD
         
         socket.on('sendDecay', function (data) {
+<<<<<<< HEAD
             console.log("server has decaying apple, quantity " + data); 
 =======
 
         socket.on('sendDecay', function () {
             console.log("server has the bird's decaying apple");
 >>>>>>> austinbranch
+=======
+>>>>>>> merged-games
             if (playerMap[WORM_GAME] != -1) {
-                socket.to(playerMap[WORM_GAME]).emit('receiveDecay', data);
+                socket.to(playerMap[WORM_GAME]).emit('receiveDecay');
             }
         });
 

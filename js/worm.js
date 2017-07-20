@@ -1,4 +1,4 @@
-// Worm 6/30/2017 13:21
+// Worm 7/20/2017 10:58
 
 // This game is an amalgamation of original code, code inspired by the Discover Phaser tutorial, and Danny Markov's "Making Your First HTML5 Game With Phaser" tutorial on tutorialzine.com.
 
@@ -257,6 +257,7 @@ var wormState = {
     },
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     newDecay: function (number) {
         for (i = 0; i < number; i++) {
             // Choose a random place on the grid.
@@ -277,6 +278,15 @@ var wormState = {
         decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
 
 >>>>>>> austinbranch
+=======
+    newDecay: function () {
+        // Choose a random place on the grid.
+        var randomX = (Math.floor(Math.random() * 38) * SQUARESIZE) + SQUARESIZE,
+            randomY = (Math.floor(Math.random() * 21) * SQUARESIZE) + SQUARESIZE;
+
+        // Add a new decay.
+        decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
+>>>>>>> merged-games
     },
 
     decayCollision: function (firstCell) {
@@ -313,7 +323,7 @@ var wormState = {
 
         if (this.depositButton.isDown && holding > 0) {
             if (isPressed == true) {
-                
+
                 holding--;
                 console.log("Now holding " + holding);
                 this.updateBelly(holding);
@@ -322,7 +332,7 @@ var wormState = {
                 Client.sendNutrient();
                 this.delivered++;
                 this.updateDelivered(this.delivered);
-                
+
                 speedModifier += 2; // Slow down for every nutrient depositied
                 isPressed = false; // Set isPressed to false. This block can only run again when it's true.
             }
@@ -387,15 +397,6 @@ var wormState = {
     createWorld: function () {
         game.add.image(0, 0, 'wormBG');
         this.drawRoot();
-
-        //        this.map = game.add.tilemap('dmap');
-        //        this.map.addTilesetImage('tiles');
-        //        this.layer = this.map.createLayer('Tile Layer 1');
-
-        //        this.layer.resizeWorld();
-
-        //        // Enable collisions for the XX'th tilset elements (dark worm, roots, worms)
-        //        this.map.setCollision();
     },
 
     drawRoot: function () {

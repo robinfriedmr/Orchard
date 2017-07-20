@@ -1,4 +1,4 @@
-var address = window.location.origin + ":8090";
+var address = window.location.origin + ":8152";
 
 var Client = {};
 Client.socket = io.connect(address);
@@ -33,9 +33,12 @@ Client.sendApple = function () {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Client.sendDecay = function (data) {
     Client.socket.emit('sendDecay', data);  
 =======
+=======
+>>>>>>> merged-games
 Client.sendDecay = function () {
     Client.socket.emit('sendDecay');
 >>>>>>> austinbranch
@@ -71,10 +74,13 @@ Client.socket.on('receiveApple', function () {
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Client.socket.on('receiveDecay', function (data) {
     console.log(data + " is what the number of decay sent to worm player.")
     wormState.newDecay(data); 
 =======
+=======
+>>>>>>> merged-games
 Client.socket.on('receiveDecay', function () {
     wormState.newDecay();
 >>>>>>> austinbranch
