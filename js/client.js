@@ -1,4 +1,4 @@
-var address = window.location.origin + ":8152";
+var address = window.location.origin + ":8090";
 
 var Client = {};
 Client.socket = io.connect(address);
@@ -21,19 +21,21 @@ Client.askBird = function () {
 };
 
 Client.sendNutrient = function () {
-    Client.socket.emit('sendNutrient');  
+    Client.socket.emit('sendNutrient');
 };
 
 Client.pullNutrient = function () {
-    Client.socket.emit('pullNutrient');  
+    Client.socket.emit('pullNutrient');
 };
 
 Client.sendApple = function () {
-    Client.socket.emit('sendApple');  
+    Client.socket.emit('sendApple');
 };
 
 Client.sendDecay = function (data) {
     Client.socket.emit('sendDecay', data);  
+Client.sendDecay = function () {
+    Client.socket.emit('sendDecay');
 };
 
 Client.sendSeed = function (seedX) {
@@ -50,15 +52,15 @@ Client.socket.on('giveIDs', function (data) {
 });
 
 Client.socket.on('refreshID', function (data) {
-    menuState.giveIDs(data.wormPD, data.treePD, data.birdPD); 
+    menuState.giveIDs(data.wormPD, data.treePD, data.birdPD);
 });
 
 Client.socket.on('receiveNutrient', function () {
-    treeState.nutrientSupply(); 
+    treeState.nutrientSupply();
 });
 
 Client.socket.on('eraseNutrient', function () {
-    wormState.eraseNutrient(); 
+    wormState.eraseNutrient();
 });
 
 Client.socket.on('receiveApple', function () {
@@ -68,6 +70,8 @@ Client.socket.on('receiveApple', function () {
 Client.socket.on('receiveDecay', function (data) {
     console.log(data + " is what the number of decay sent to worm player.")
     wormState.newDecay(data); 
+Client.socket.on('receiveDecay', function () {
+    wormState.newDecay();
 });
 
 Client.socket.on('plantSeed', function (seedX) {
@@ -103,6 +107,10 @@ Client.socket.on('treeNo', function (data) {
 
 Client.socket.on('birdGo', function (data) {
     menuState.startBird(data);
+});
+
+Client.socket.on('plantRoot', function () {
+    wormState.drawRoot();
 });
 
 Client.socket.on('birdNo', function (data) {
