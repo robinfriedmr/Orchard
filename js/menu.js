@@ -25,6 +25,8 @@ var menuState = {
         
         this.running = true;
 
+        this.running = true;
+
         // Display the name of the game
         var styleTitle = {
             font: '50px Arial',
