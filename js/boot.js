@@ -1,7 +1,5 @@
 //Boot
 
-//The bootState comes first. It loads things before anything else loads, such as the progress bar for the loading screen, and some basic settings that we previously included in 'main.js' (now play.js).
-
 var bootState = {
     preload: function () {
         // Load images
@@ -20,18 +18,11 @@ var bootState = {
         game.load.image('goal', 'assets/img/goal.png');
         game.load.image('root', 'assets/img/root.png');
 
-        game.load.image('water', 'assets/img/water.png');
-        game.load.image('CO2', 'assets/img/CO2.png');
         game.load.image('growingapple', 'assets/img/growingapple.png');
         game.load.image('bulletSelect', ' assets/img/bulletSelect.png');
 
         game.load.spritesheet('bird', 'assets/img/bird.png', 50, 60);
         game.load.image('seeds', 'assets/img/seeds.png');
-
-        //Tiles is universal. Dmap is for the dirt level.
-        //        game.load.image('tiles', 'assets/tiles.png');
-        //        game.load.tilemap('dmap', 'assets/dmap.json', null, Phaser.Tilemap.TILED_JSON);
-
     },
 
     create: function () {

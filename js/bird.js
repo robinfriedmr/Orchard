@@ -100,8 +100,6 @@ var birdState = {
     destroyFallenApple: function () {
         this.fallingApple.alive = false;
         this.fallingApple.destroy();
-
-        Client.sendDecay(1);
         Client.sendDecay();
     },
 
@@ -147,7 +145,6 @@ var birdState = {
 
         this.emitter.start(true, 1000, null, 10);
 
-        Client.sendDecay(5);
         Client.sendDecay();
         Client.sendDecay();
         Client.sendDecay();
