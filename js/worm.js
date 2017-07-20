@@ -212,11 +212,11 @@ var wormState = {
         }
     },
 
-    newDecay: function (number) {
-        for (i = 0; i < number; i++) {
-            // Choose a random place on the grid.
-            var randomX = (Math.floor(Math.random() * 38) * SQUARESIZE) + SQUARESIZE,
-                randomY = (Math.floor(Math.random() * 21) * SQUARESIZE) + SQUARESIZE;
+	
+    newDecay: function () {
+        // Choose a random place on the grid.
+        var randomX = (Math.floor(Math.random() * 38) * SQUARESIZE) + SQUARESIZE,
+            randomY = (Math.floor(Math.random() * 21) * SQUARESIZE) + SQUARESIZE;
 
             // Add a new decay.
             decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
