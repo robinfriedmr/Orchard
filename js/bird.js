@@ -110,6 +110,7 @@ var birdState = {
     destroyFallenApple: function () {
         this.fallingApple.alive = false;
         this.fallingApple.destroy();
+
         Client.sendDecay();
     },
 
@@ -159,6 +160,7 @@ var birdState = {
         for (i = 0; i < 5; i++) {
             Client.sendDecay();
         }
+
         Client.sendSeed(this.birdplayer.x);
         //}
     },

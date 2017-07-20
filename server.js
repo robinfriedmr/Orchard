@@ -14,7 +14,7 @@ app.get('/', function (req, res) {
 httpServer.lastPlayerID = 0;
 
 // 'PD' for Player Data
-httpServer.currentData = { 
+httpServer.currentData = {
     wormPD: -1,
     treePD: -1,
     birdPD: -1
@@ -75,7 +75,7 @@ io.on('connection', function (socket) {
             // The player who requested Worm is given their own ID.
             socket.emit('wormGo', socket.player.id);
             playerMap[WORM_GAME] = socket.id;
-            
+
             // Everyone else is not allowed to choose Worm.
             httpServer.currentData.wormPD = socket.player.id; // update currentData object on server
             socket.broadcast.emit('wormNo', httpServer.currentData.wormPD); // emit the new value of wormPD
@@ -95,7 +95,7 @@ io.on('connection', function (socket) {
             // The player who requested Bird is given their own ID.
             socket.emit('birdGo', socket.player.id);
             playerMap[BIRD_GAME] = socket.id;
-            
+
             // Everyone else is not allowed to choose Bird.
             httpServer.currentData.birdPD = socket.player.id;
             socket.broadcast.emit('birdNo', httpServer.currentData.birdPD);
@@ -115,7 +115,7 @@ io.on('connection', function (socket) {
         socket.on('sendNutrient', function () {
             console.log("server has wormplayer's nutrient");
             if (playerMap[TREE_GAME] != -1) {
-                socket.to(playerMap[TREE_GAME]).emit('receiveNutrient'); 
+                socket.to(playerMap[TREE_GAME]).emit('receiveNutrient');
             }
         });
 
@@ -123,17 +123,18 @@ io.on('connection', function (socket) {
             console.log("tree is pulling the nutrient from worm");
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('eraseNutrient');
-            } 
+            }
         });
-        
+
         socket.on('sendApple', function () {
             console.log("server has the tree's apple");
             if (playerMap[BIRD_GAME] != -1) {
                 socket.to(playerMap[BIRD_GAME]).emit('receiveApple');
             }
         });
-        
-        socket.on('sendDecay', function (data) {
+
+        socket.on('sendDecay', function () {
+            console.log("server has the bird's decaying apple");
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('receiveDecay');
             }

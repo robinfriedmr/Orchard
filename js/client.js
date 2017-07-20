@@ -32,6 +32,7 @@ Client.sendApple = function () {
     Client.socket.emit('sendApple');
 };
 
+
 Client.sendDecay = function () {
     Client.socket.emit('sendDecay');
 };
@@ -64,6 +65,7 @@ Client.socket.on('eraseNutrient', function () {
 Client.socket.on('receiveApple', function () {
     birdState.appleDrop();
 });
+
 
 Client.socket.on('receiveDecay', function () {
     wormState.newDecay();
