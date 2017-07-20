@@ -32,10 +32,13 @@ Client.sendApple = function () {
     Client.socket.emit('sendApple');
 };
 
+<<<<<<< HEAD
 Client.sendDecay = function (data) {
     Client.socket.emit('sendDecay', data);  
+=======
 Client.sendDecay = function () {
     Client.socket.emit('sendDecay');
+>>>>>>> austinbranch
 };
 
 Client.sendSeed = function (seedX) {
@@ -67,11 +70,14 @@ Client.socket.on('receiveApple', function () {
     birdState.appleDrop();
 });
 
+<<<<<<< HEAD
 Client.socket.on('receiveDecay', function (data) {
     console.log(data + " is what the number of decay sent to worm player.")
     wormState.newDecay(data); 
+=======
 Client.socket.on('receiveDecay', function () {
     wormState.newDecay();
+>>>>>>> austinbranch
 });
 
 Client.socket.on('plantSeed', function (seedX) {

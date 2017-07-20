@@ -14,7 +14,7 @@ app.get('/', function (req, res) {
 httpServer.lastPlayerID = 0;
 
 // 'PD' for Player Data
-httpServer.currentData = { 
+httpServer.currentData = {
     wormPD: -1,
     treePD: -1,
     birdPD: -1
@@ -28,7 +28,7 @@ const BIRD_GAME = 2;
 
 httpServer.score = 0;
 
-httpServer.listen(8152, function () {
+httpServer.listen(8090, function () {
     console.log('Listening on ' + httpServer.address().port);
 });
 
@@ -75,7 +75,7 @@ io.on('connection', function (socket) {
             // The player who requested Worm is given their own ID.
             socket.emit('wormGo', socket.player.id);
             playerMap[WORM_GAME] = socket.id;
-            
+
             // Everyone else is not allowed to choose Worm.
             httpServer.currentData.wormPD = socket.player.id; // update currentData object on server
             socket.broadcast.emit('wormNo', httpServer.currentData.wormPD); // emit the new value of wormPD
@@ -95,7 +95,7 @@ io.on('connection', function (socket) {
             // The player who requested Bird is given their own ID.
             socket.emit('birdGo', socket.player.id);
             playerMap[BIRD_GAME] = socket.id;
-            
+
             // Everyone else is not allowed to choose Bird.
             httpServer.currentData.birdPD = socket.player.id;
             socket.broadcast.emit('birdNo', httpServer.currentData.birdPD);
@@ -115,7 +115,7 @@ io.on('connection', function (socket) {
         socket.on('sendNutrient', function () {
             console.log("server has wormplayer's nutrient");
             if (playerMap[TREE_GAME] != -1) {
-                socket.to(playerMap[TREE_GAME]).emit('receiveNutrient'); 
+                socket.to(playerMap[TREE_GAME]).emit('receiveNutrient');
             }
         });
 
@@ -123,18 +123,24 @@ io.on('connection', function (socket) {
             console.log("tree is pulling the nutrient from worm");
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('eraseNutrient');
-            } 
+            }
         });
-        
+
         socket.on('sendApple', function () {
             console.log("server has the tree's apple");
             if (playerMap[BIRD_GAME] != -1) {
                 socket.to(playerMap[BIRD_GAME]).emit('receiveApple');
             }
         });
+<<<<<<< HEAD
         
         socket.on('sendDecay', function (data) {
             console.log("server has decaying apple, quantity " + data); 
+=======
+
+        socket.on('sendDecay', function () {
+            console.log("server has the bird's decaying apple");
+>>>>>>> austinbranch
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('receiveDecay', data);
             }
@@ -143,6 +149,9 @@ io.on('connection', function (socket) {
         // Score!
         socket.on('sendSeed', function (seedX) {
             console.log("Server has the seed, at " + seedX);
+            if (playerMap[WORM_GAME] != -1) {
+                socket.to(playerMap[WORM_GAME]).emit('plantRoot');
+            }
             socket.emit('plantSeed', seedX); // tell the birdplayer to plant the seed
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('plantRoot');

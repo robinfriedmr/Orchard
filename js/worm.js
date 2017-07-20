@@ -2,7 +2,11 @@
 
 // This game is an amalgamation of original code, code inspired by the Discover Phaser tutorial, and Danny Markov's "Making Your First HTML5 Game With Phaser" tutorial on tutorialzine.com.
 
+<<<<<<< HEAD
 var isPressed = true; // this is a variable temporarily needed to get the overlap with goal function tested. 
+=======
+var isClicked = false; // this is a variable temporarily needed to get the overlap with goal function tested. 
+>>>>>>> austinbranch
 
 var worm, decay, nutrient, holding,
     speed, speedModifier,
@@ -20,7 +24,11 @@ var wormState = {
 
         // Arrow and space keys
         this.cursor = game.input.keyboard.createCursorKeys();
+<<<<<<< HEAD
         this.depositButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+=======
+        this.spacebar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+>>>>>>> austinbranch
         this.wasd = {
             up: game.input.keyboard.addKey(Phaser.Keyboard.W),
             down: game.input.keyboard.addKey(Phaser.Keyboard.S),
@@ -58,6 +66,7 @@ var wormState = {
             fill: '#ffffff'
         });
         this.wScoreLabel.anchor.setTo(1, 1);
+<<<<<<< HEAD
 
         this.devoured = 0;
         decayDevoured = game.add.text(game.width / 2, game.height - 10, 'Held Decay: ' + this.devoured, {
@@ -77,6 +86,27 @@ var wormState = {
         game.physics.arcade.enable(worm, Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
 
+=======
+
+        this.devoured = 0;
+        decayDevoured = game.add.text(game.width / 2, game.height - 10, 'Held Decay: ' + this.devoured, {
+            font: '16px Arial',
+            fill: '#ffffff'
+        });
+        decayDevoured.anchor.setTo(0.5, 1);
+
+        this.delivered = 0;
+        nutrientsDelivered = game.add.text(12, game.height - 10, 'Nutrients Delivered: ' + this.delivered, {
+            font: '16px Arial',
+            fill: '#ffffff'
+        });
+        nutrientsDelivered.anchor.setTo(0, 1);
+
+        // Enable overlap physics.
+        game.physics.arcade.enable(worm, Phaser.Physics.ARCADE);
+        game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
+
+>>>>>>> austinbranch
         // Genereate the first three pieces of decay.
         this.newDecay(3);
 
@@ -100,10 +130,24 @@ var wormState = {
             this.orientationChange();
         }
 
+<<<<<<< HEAD
         //       game.input.onDown.add(this.makeTrue, this); // CODE FOR CLICKING.
+=======
+        game.input.onDown.add(this.makeTrue, this);
+>>>>>>> austinbranch
     },
 
     update: function () {
+        //This is meant to allow a nutrient to be dropped only on a mouse-click. 
+        if (!game.input.activePointer.leftButton.isDown) {
+            this.makeFalse();
+            wasCalled = false;
+        }
+
+        // Is the worm over the goal? 
+        game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
+
+        var firstCell = worm[worm.length - 1];
 
         //        if (!game.input.activePointer.leftButton.isDown) { // CODE FOR CLICKING.
         //            this.makeFalse();
@@ -212,6 +256,7 @@ var wormState = {
         }
     },
 
+<<<<<<< HEAD
     newDecay: function (number) {
         for (i = 0; i < number; i++) {
             // Choose a random place on the grid.
@@ -222,6 +267,16 @@ var wormState = {
             decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
 
         }
+=======
+    newDecay: function () {
+        // Choose a random place on the grid.
+        var randomX = (Math.floor(Math.random() * 38) * SQUARESIZE) + SQUARESIZE,
+            randomY = (Math.floor(Math.random() * 21) * SQUARESIZE) + SQUARESIZE;
+
+        // Add a new decay.
+        decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
+
+>>>>>>> austinbranch
     },
 
     decayCollision: function (firstCell) {
@@ -249,6 +304,7 @@ var wormState = {
                 }
             }
         }
+<<<<<<< HEAD
     },
 
     depositNutrient: function () {
@@ -283,6 +339,46 @@ var wormState = {
     //        //console.log("A nutrient is erased.");
     //
     //        which = birdState.getRandomInt(1, this.nutrientArray.length);
+    //        this.nutrientArray.splice(which - 1, 1);
+    //
+    //        console.log(this.nutrientArray.length);
+    //    },
+=======
+    },
+
+    makeTrue: function () {
+        isClicked = true;
+    },
+
+    makeFalse: function () {
+        isClicked = false;
+    },
+
+    depositNutrient: function () {
+        x = worm[0].x;
+        y = worm[0].y;
+
+        if (isClicked == true && holding > 0) {
+            holding--;
+            console.log("Now holding " + holding);
+            this.updateBelly(holding);
+
+            nutrient[nutrient.length] = game.add.sprite(x, y, 'nutrient');
+            Client.sendNutrient();
+            this.delivered++;
+            this.updateDelivered(this.delivered);
+
+            isClicked = false;
+            speedModifier += 2; // Slow down for every nutrient depositied
+        }
+    },
+>>>>>>> austinbranch
+
+    //    eraseNutrient: function () {
+    //        console.log(this.nutrientArray.length);
+    //        //console.log("A nutrient is erased.");
+    //
+    //        which = birdState.getRandomInt(0, this.nutrientArray.length);
     //        this.nutrientArray.splice(which - 1, 1);
     //
     //        console.log(this.nutrientArray.length);
@@ -328,10 +424,17 @@ var wormState = {
             y: 0
         }
         var F = {
+<<<<<<< HEAD
             x: game.width - 30 - SQUARESIZE,
             y: 0
         }
         // RIGHT
+=======
+                x: game.width - 30 - SQUARESIZE,
+                y: 0
+            }
+            // RIGHT
+>>>>>>> austinbranch
         var G = {
             x: game.width - SQUARESIZE,
             y: 120
@@ -353,6 +456,7 @@ var wormState = {
         var whichSpot = Math.random();
 
         switch (here) { // Once the side has been decided on, go to that side and...
+<<<<<<< HEAD
             case 'left': // ...choose between which two positions the root will go. 
                 console.log("left");
 
@@ -448,6 +552,103 @@ var wormState = {
                     }
                     this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
                 }
+=======
+        case 'left': // ...choose between which two positions the root will go. 
+            console.log("left");
+
+            if (whichSpot < 0.5) {
+                var rootX = A.x;
+                var rootY = A.y;
+            } else {
+                var rootX = B.x;
+                var rootY = B.y;
+            }
+
+            // Place the base accordingly.
+            this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+
+            var prob = 0.15; // The probability of turning left or right starts at 15%.                
+
+            for (i = 0; i < 10; i++) {
+                if (Math.random() < prob) {
+                    rootY += SQUARESIZE;
+                    prob = 0.15;
+                } else {
+                    rootX += SQUARESIZE;
+                    prob += 0.15;
+                }
+
+                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+            }
+
+            break;
+
+        case 'right':
+            console.log("right");
+
+            if (whichSpot < 0.5) {
+                var rootX = G.x;
+                var rootY = G.y;
+            } else {
+                var rootX = H.x;
+                var rootY = H.y;
+            }
+
+            this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+
+            var prob = 0.15;
+
+            for (i = 0; i < 10; i++) {
+                if (Math.random() < prob) {
+                    rootY += SQUARESIZE;
+                    prob = 0.15;
+                } else {
+                    rootX -= SQUARESIZE;
+                    prob += 0.15;
+                }
+
+                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+            }
+
+            break;
+
+        case 'top':
+            console.log("top");
+
+            if (whichSpot < 0.25) {
+                var rootX = C.x;
+                var rootY = C.y;
+            } else if (whichSpot >= 0.25 && whichSpot < 0.5) {
+                var rootX = D.x;
+                var rootY = D.y;
+            } else if (whichSpot >= 0.5 && whichSpot < 0.75) {
+                var rootX = E.x;
+                var rootY = E.y;
+            } else {
+                var rootX = F.x;
+                var rootY = F.y;
+            }
+
+            this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+
+            var prob = 0.05;
+
+            for (i = 0; i < 10; i++) {
+                if (Math.random() < prob) {
+                    if (Math.random() <= 0.5) {
+                        rootX -= SQUARESIZE;
+                        prob = 0.05
+                    } else {
+                        rootX += SQUARESIZE;
+                        prob = 0.05;
+                    }
+                } else {
+                    rootY += SQUARESIZE;
+                    prob += 0.15;
+                }
+                this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
+            }
+>>>>>>> austinbranch
         }
     },
 
