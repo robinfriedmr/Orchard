@@ -1,4 +1,4 @@
-// Worm 7/20/2017 10:58
+// Worm 7/21/2017 7:57
 
 // This game is an amalgamation of original code, code inspired by the Discover Phaser tutorial, and Danny Markov's "Making Your First HTML5 Game With Phaser" tutorial on tutorialzine.com.
 
@@ -78,7 +78,9 @@ var wormState = {
         game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
 
         // Genereate the first three pieces of decay.
-        this.newDecay(3);
+        for (i = 0; i < 3; i++) {
+            this.newDecay();
+        }
 
         // The arrow keys and spacebar will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -212,16 +214,13 @@ var wormState = {
         }
     },
 
-	
     newDecay: function () {
         // Choose a random place on the grid.
         var randomX = (Math.floor(Math.random() * 38) * SQUARESIZE) + SQUARESIZE,
             randomY = (Math.floor(Math.random() * 21) * SQUARESIZE) + SQUARESIZE;
 
-            // Add a new decay.
-            decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
-
-        }
+        // Add a new decay.
+        decay[decay.length] = game.add.sprite(randomX, randomY, 'decay');
     },
 
     decayCollision: function (firstCell) {
@@ -257,7 +256,7 @@ var wormState = {
 
         if (this.depositButton.isDown && holding > 0) {
             if (isPressed == true) {
-                
+
                 holding--;
                 console.log("Now holding " + holding);
                 this.updateBelly(holding);
@@ -266,7 +265,7 @@ var wormState = {
                 Client.sendNutrient();
                 this.delivered++;
                 this.updateDelivered(this.delivered);
-                
+
                 speedModifier += 2; // Slow down for every nutrient depositied
                 isPressed = false; // Set isPressed to false. This block can only run again when it's true.
             }

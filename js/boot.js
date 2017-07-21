@@ -19,7 +19,8 @@ var bootState = {
         game.load.image('root', 'assets/img/root.png');
 
         game.load.image('growingapple', 'assets/img/growingapple.png');
-        game.load.image('bulletSelect', ' assets/img/bulletSelect.png');
+        game.load.image('bulletSelect', 'assets/img/bulletSelect.png');
+        game.load.image('CO2', 'assets/img/CO2.png');
 
         game.load.spritesheet('bird', 'assets/img/bird.png', 50, 60);
         game.load.image('ground', 'assets/img/ground.png');

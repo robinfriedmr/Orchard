@@ -145,7 +145,7 @@ io.on('connection', function (socket) {
             console.log("Server has the seed, at " + seedX);
             socket.emit('plantSeed', seedX); // tell the birdplayer to plant the seed
             if (playerMap[WORM_GAME] != -1) {
-                socket.to(playerMap[WORM_GAME]).emit('plantRoot');
+                socket.to(playerMap[WORM_GAME]).emit('plantRoot'); // tell the worm player to have a new root
             }
 
             httpServer.score++; //increase server score

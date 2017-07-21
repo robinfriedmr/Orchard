@@ -30,16 +30,12 @@ var birdState = {
         // Add pooped seed emitter.
         this.emitter = game.add.emitter(55, 55, 10);
         this.emitter.makeParticles('seeds');
-        this.emitter.gravity = 555
+        this.emitter.gravity = 555;
 
         // Add sprites to the game.
         this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
         this.birdplayer.frame = 1;
         this.birdplayer.anchor.setTo(0.5, 0.5);
-
-        for (i = 0; i < 5; i++) {
-            this.makeTrash();
-        }
 
         // Enable physics on the sprites' bodies.
         game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
@@ -47,6 +43,11 @@ var birdState = {
         // this.birdplayer.body.mass = 10; // ************
         this.birdplayer.body.setSize(40, 60)
         this.birdplayer.body.collideWorldBounds = true;
+
+        // Add five pieces of trash.
+        for (i = 0; i < 5; i++) {
+            this.makeTrash();
+        }
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -110,7 +111,6 @@ var birdState = {
     destroyFallenApple: function () {
         this.fallingApple.alive = false;
         this.fallingApple.destroy();
-
         Client.sendDecay();
     },
 
@@ -149,25 +149,25 @@ var birdState = {
 
     dump: function (x, y) {
         //if (this.birdplayer.body.onFloor()) { // boolean that evaluates if the bird player is on the bottom of the world
+
         this.birdplayer.frame = 1;
         appleEaten = false;
 
-        this.emitter.x = x - 5;
+        this.emitter.x = x;
         this.emitter.y = y + 50;
 
         this.emitter.start(true, 1000, null, 10);
 
-        for (i = 0; i < 5; i++) {
+        Client.sendSeed(this.birdplayer.x); // Ask the server to plant a seed
+        for (i = 0; i < 5; i++) { // Send five pieces of decay per seed planted
             Client.sendDecay();
         }
 
-        Client.sendSeed(this.birdplayer.x);
         //}
     },
 
     plantSeed: function (seedX) {
         game.add.image(seedX, game.height - 15, 'nutrient');
-
     },
 
     updateScore: function (bScore) {
@@ -193,16 +193,18 @@ var birdState = {
     createWorld: function () {
         this.bg = game.add.image(0, 0, 'birdBG');
 
-        this.platforms = this.add.physicsGroup(); // create physics group for the ground
+        this.platforms = this.add.physicsGroup(); // create physics group for the ground. // **********************************
         this.platforms.create(0, game.height - 5, 'ground'); // create the ground
         this.platforms.setAll('body.allowGravity', false); // set 
         this.platforms.setAll('body.immovable', true); // its
         this.platforms.setAll('body.velocity.x', 100); // properties
-        this.platforms.setAll('body.friction.x', 1);
-        
+        this.platforms.setAll('body.friction.x', 1); // !
+
+
         //this.bg.inputEnabled = true; // allow the click/tap event to actually do something
 
         game.physics.arcade.gravity.y = 500; //world gravity
+
     },
 
     makeTrash: function () {
@@ -214,11 +216,11 @@ var birdState = {
 
         aPiece.body.gravity.y = 5;
         aPiece.body.moves = true;
-        aPiece.body.mass = 10;
+        //aPiece.body.mass = 10;
         aPiece.body.velocity.setTo(200, 200);
 
-        aPiece.body.drag.x = 1;
-        aPiece.body.friction.x = 1;
+        //aPiece.body.drag.x = 1;
+        //aPiece.body.friction.x = 1;
         aPiece.body.collideWorldBounds = true;
         aPiece.body.bounce.set(0.5, 0.25);
     },
@@ -269,9 +271,12 @@ var birdState = {
         }
     },
 
+
     // ****************** MOBILE FUNCTIONS *****************
     addMobileInputs: function () {
+
         // this.bg.events.onInputDown.add(this.jump, this);
+
     },
 
     orientationChange: function () {
