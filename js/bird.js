@@ -40,9 +40,9 @@ var birdState = {
         // Enable physics on the sprites' bodies.
         game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
         this.birdplayer.body.gravity.y = 1000;
-        // this.birdplayer.body.mass = 10; // ************
-        this.birdplayer.body.setSize(40, 60)
+        this.birdplayer.body.setSize(40, 55)
         this.birdplayer.body.collideWorldBounds = true;
+        this.birdplayer.body.checkCollision.down = false;
 
         this.makeTrash();
 
@@ -72,7 +72,7 @@ var birdState = {
 
     update: function () {
         game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
-        game.physics.arcade.collide([this.birdplayer, this.trash], [this.trash]);        
+        game.physics.arcade.collide([this.birdplayer, this.trash], [this.trash, this.platforms]);
 
         // For debug.
         if (this.wasCalledToggle.isDown && wasCalledB == true) {
@@ -191,12 +191,14 @@ var birdState = {
         this.bg = game.add.image(0, 0, 'birdBG');
 
         this.platforms = this.add.physicsGroup(); // Create physics group for the ground. A physicsGroup has a physics body enabled by default. 
-        this.platforms.create(0, game.height - 5, 'ground'); // create the ground
-        this.platforms.setAll('body.allowGravity', false); // set 
-        this.platforms.setAll('body.immovable', true); // its
-        this.platforms.setAll('body.velocity.x', 100); // properties
-        this.platforms.setAll('body.friction.x', 1); // !
 
+        // Create the ground and set properties.
+        this.platforms.create(0, game.height - 5, 'ground');
+        this.platforms.setAll('body.allowGravity', false);
+        this.platforms.setAll('body.immovable', true);
+        this.platforms.setAll('body.moves', false);
+        this.platforms.setAll('body.velocity.x', 100);
+        this.platforms.setAll('body.friction.x', 1);
 
         //this.bg.inputEnabled = true; // allow the click/tap event to actually do something
 
@@ -212,7 +214,7 @@ var birdState = {
             var randomX = Math.floor(Math.random() * 600);
             this.trash.create(randomX, game.height - 5, 'trash');
         }
-        
+
         this.trash.forEach(function (piece) {
             piece.anchor.setTo(0.5, 1);
 
@@ -221,9 +223,8 @@ var birdState = {
             piece.body.velocity.setTo(100, 100);
 
             piece.body.collideWorldBounds = true;
-            piece.body.bounce.set(0.8);
-            piece.body.friction.x = 1;
-            piece.body.drag.x = 1;
+            piece.body.bounce.set(0.75);
+            piece.body.drag.x = 300;
         });
     },
 
