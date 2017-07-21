@@ -44,10 +44,7 @@ var birdState = {
         this.birdplayer.body.setSize(40, 60)
         this.birdplayer.body.collideWorldBounds = true;
 
-        // Add five pieces of trash.
-        for (i = 0; i < 5; i++) {
-            this.makeTrash();
-        }
+        this.makeTrash();
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -74,10 +71,8 @@ var birdState = {
     },
 
     update: function () {
-
         game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
-        game.physics.arcade.collide(this.birdplayer, trashArray);
-        game.physics.arcade.collide(trashArray, trashArray);
+        game.physics.arcade.collide([this.birdplayer, this.trash], [this.trash]);        
 
         // For debug.
         if (this.wasCalledToggle.isDown && wasCalledB == true) {
@@ -158,10 +153,12 @@ var birdState = {
 
         this.emitter.start(true, 1000, null, 10);
 
+        //        if (Math.abs(this.emitter.x - .x) > .width) {
         Client.sendSeed(this.birdplayer.x); // Ask the server to plant a seed
         for (i = 0; i < 5; i++) { // Send five pieces of decay per seed planted
             Client.sendDecay();
         }
+        //            }
 
         //}
     },
@@ -193,7 +190,7 @@ var birdState = {
     createWorld: function () {
         this.bg = game.add.image(0, 0, 'birdBG');
 
-        this.platforms = this.add.physicsGroup(); // create physics group for the ground. // **********************************
+        this.platforms = this.add.physicsGroup(); // Create physics group for the ground. A physicsGroup has a physics body enabled by default. 
         this.platforms.create(0, game.height - 5, 'ground'); // create the ground
         this.platforms.setAll('body.allowGravity', false); // set 
         this.platforms.setAll('body.immovable', true); // its
@@ -208,21 +205,26 @@ var birdState = {
     },
 
     makeTrash: function () {
-        var randomX = Math.floor(Math.random() * 600);
-        var aPiece = game.add.sprite(randomX, game.height - 50, 'trash');
-        trashArray[trashArray.length] = aPiece;
+        this.trash = game.add.group();
+        this.trash.enableBody = true;
 
-        game.physics.arcade.enable(aPiece, Phaser.Physics.ARCADE);
+        for (i = 0; i < 5; i++) {
+            var randomX = Math.floor(Math.random() * 600);
+            this.trash.create(randomX, game.height - 5, 'trash');
+        }
+        
+        this.trash.forEach(function (piece) {
+            piece.anchor.setTo(0.5, 1);
 
-        aPiece.body.gravity.y = 5;
-        aPiece.body.moves = true;
-        //aPiece.body.mass = 10;
-        aPiece.body.velocity.setTo(200, 200);
+            piece.body.gravity.y = 5;
+            piece.body.moves = true;
+            piece.body.velocity.setTo(100, 100);
 
-        //aPiece.body.drag.x = 1;
-        //aPiece.body.friction.x = 1;
-        aPiece.body.collideWorldBounds = true;
-        aPiece.body.bounce.set(0.5, 0.25);
+            piece.body.collideWorldBounds = true;
+            piece.body.bounce.set(0.8);
+            piece.body.friction.x = 1;
+            piece.body.drag.x = 1;
+        });
     },
 
     movePlayer: function () {
