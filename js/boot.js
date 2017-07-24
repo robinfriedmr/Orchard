@@ -22,10 +22,13 @@ var bootState = {
         game.load.image('bulletSelect', 'assets/img/bulletSelect.png');
         game.load.image('CO2', 'assets/img/CO2.png');
 
-        game.load.spritesheet('bird', 'assets/img/bird.png', 50, 60);
+        game.load.spritesheet('bird', 'assets/img/birdsheet.png', 65, 65);
         game.load.image('ground', 'assets/img/ground.png');
         game.load.image('seeds', 'assets/img/seeds.png');
-        game.load.image('trash', 'assets/img/doritos.png');
+        game.load.spritesheet('tree', 'assets/img/treetiles.png');
+        game.load.image('chips', 'assets/img/chips.png');
+        game.load.image('bottle', 'assets/img/bottle.png');
+        game.load.image('can', 'assets/img/can.png');
     },
 
     create: function () {

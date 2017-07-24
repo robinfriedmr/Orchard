@@ -36,6 +36,10 @@ var birdState = {
         this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
         this.birdplayer.frame = 1;
         this.birdplayer.anchor.setTo(0.5, 0.5);
+        
+        // Add animations.
+        this.birdplayer.animations.add('fly', [0, 1], 8, true);
+        this.birdplayer.animations.add('fatfly', [2, 3], 10, true);
 
         // Enable physics on the sprites' bodies.
         game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
@@ -82,11 +86,11 @@ var birdState = {
         this.debugDrop();
 
         // Change angle of bird to encourage flapping.
-        if (this.birdplayer.scale.x == -1) {
+        if (this.birdplayer.scale.x == 1) {
             if (this.birdplayer.angle > -20) {
                 this.birdplayer.angle -= 1;
             }
-        } else if (this.birdplayer.scale.x == 1) {
+        } else if (this.birdplayer.scale.x == -1) {
             if (this.birdplayer.angle < 20) {
                 this.birdplayer.angle += 1;
             }
@@ -128,7 +132,7 @@ var birdState = {
     eatApple: function () {
         if (appleEaten == false) {
             this.fallingApple.destroy();
-            this.birdplayer.frame = 0;
+            this.birdplayer.frame = 2;
             console.log("The apple is eaten");
             appleEaten = true;
         }
@@ -176,14 +180,20 @@ var birdState = {
     jump: function () {
         this.birdplayer.body.velocity.y = -350;
 
-        if (this.birdplayer.scale.x == -1) {
+        if (this.birdplayer.scale.x == 1) {
             game.add.tween(this.birdplayer).to({
                 angle: 20
             }, 100).start();
-        } else if (this.birdplayer.scale.x == 1) {
+        } else if (this.birdplayer.scale.x == -1) {
             game.add.tween(this.birdplayer).to({
                 angle: -20
             }, 100).start();
+        }
+        
+        if (appleEaten == true) {
+            this.birdplayer.animations.play('fatfly');
+        } else {
+            this.birdplayer.animations.play('fly');
         }
     },
 
@@ -210,9 +220,13 @@ var birdState = {
         this.trash = game.add.group();
         this.trash.enableBody = true;
 
+        var trashImg = ['bottle', 'chips', 'can'];
+        
         for (i = 0; i < 5; i++) {
             var randomX = Math.floor(Math.random() * 600);
-            this.trash.create(randomX, game.height - 5, 'trash');
+            var selector = birdState.getRandomInt(0, 3);
+            
+            this.trash.create(randomX, game.height - 5, trashImg[selector]);
         }
 
         this.trash.forEach(function (piece) {
@@ -239,8 +253,8 @@ var birdState = {
                 this.birdplayer.body.velocity.x = -350;
                 this.jump();
 
-                if (this.birdplayer.scale.x == 1) {
-                    this.birdplayer.scale.x = -1;
+                if (this.birdplayer.scale.x == -1) {
+                    this.birdplayer.scale.x = 1;
                 }
                 flip = false;
 
@@ -248,8 +262,8 @@ var birdState = {
                 this.birdplayer.body.velocity.x = 350;
                 this.jump();
 
-                if (this.birdplayer.scale.x == -1) {
-                    this.birdplayer.scale.x = 1;
+                if (this.birdplayer.scale.x == 1) {
+                    this.birdplayer.scale.x = -1;
                 }
                 flip = false;
 
@@ -258,6 +272,9 @@ var birdState = {
                 this.birdplayer.body.velocity.x = 0;
 
                 if (this.birdplayer.body.onFloor() || this.birdplayer.body.touching.down) {
+                    this.birdplayer.animations.stop();
+                    this.birdplayer.frame = 1;
+                    
                     game.add.tween(this.birdplayer).to({
                         angle: 0
                     }, 100).start();
