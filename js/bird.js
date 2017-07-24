@@ -1,5 +1,7 @@
 var wasCalledB = false;
 var appleEaten = false;
+var groundChecked = true;
+var growChecked = true;
 
 var flip = true;
 
@@ -15,8 +17,12 @@ var birdState = {
         this.poopButton = game.input.keyboard.addKey(Phaser.Keyboard.W);
         this.wasCalledToggle = game.input.keyboard.addKey(Phaser.Keyboard.R);
 
-        // Create object for fallingApple so that it's defined.
+        // Create object for fallingApple.
         this.fallingApple = {};
+
+        // Create an array for allTrees.
+        this.allTrees = [];
+        console.log(this.allTrees.z + " of empty allTrees array");
 
         // Add background. 
         this.createWorld();
@@ -37,6 +43,8 @@ var birdState = {
         this.birdplayer.frame = 1;
         this.birdplayer.anchor.setTo(0.5, 0.5);
         
+        console.log(this.birdplayer.z + " of bird");
+
         // Add animations.
         this.birdplayer.animations.add('fly', [0, 1], 8, true);
         this.birdplayer.animations.add('fatfly', [2, 3], 10, true);
@@ -49,6 +57,8 @@ var birdState = {
         this.birdplayer.body.checkCollision.down = false;
 
         this.makeTrash();
+        
+        console.log(this.trash.z + " of trash");
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -77,11 +87,11 @@ var birdState = {
     update: function () {
         game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
         game.physics.arcade.collide([this.birdplayer, this.trash], [this.trash, this.platforms]);
+        game.physics.arcade.collide(this.seed, this.platforms, this.groundCheck, null, this);
 
         // For debug.
         if (this.wasCalledToggle.isDown && wasCalledB == true) {
             wasCalledB = false; // Toggle wasCalled back to false.
-            console.log("wasCalled is now " + wasCalledB);
         }
         this.debugDrop();
 
@@ -114,7 +124,6 @@ var birdState = {
     },
 
     appleDrop: function () {
-        console.log("An apple is dropped.");
         this.fallingApple = game.add.sprite(this.getRandomInt(50, game.width - 50), 0, 'growingapple');
         this.fallingApple.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(this.fallingApple, Phaser.Physics.ARCADE);
@@ -133,7 +142,6 @@ var birdState = {
         if (appleEaten == false) {
             this.fallingApple.destroy();
             this.birdplayer.frame = 2;
-            console.log("The apple is eaten");
             appleEaten = true;
         }
     },
@@ -147,53 +155,77 @@ var birdState = {
     },
 
     dump: function (x, y) {
-        //if (this.birdplayer.body.onFloor()) { // boolean that evaluates if the bird player is on the bottom of the world
-
         this.birdplayer.frame = 1;
         appleEaten = false;
+        groundChecked = false;
 
         this.emitter.x = x;
         this.emitter.y = y + 50;
 
         this.emitter.start(true, 1000, null, 10);
 
-        //        if (Math.abs(this.emitter.x - .x) > .width) {
-        Client.sendSeed(this.birdplayer.x); // Ask the server to plant a seed
+        var howhigh = Math.max(0, this.birdplayer.y);
+        this.seed = game.add.sprite(x, howhigh, 'tree');
+        this.seed.anchor.setTo(0.5, 1);
+        this.seed.frame = 0;
+
+        game.physics.arcade.enable(this.seed, Phaser.Physics.ARCADE);
+        this.seed.body.collideWorldBounds = true;
+        this.seed.body.setSize(10, 300, 88, 0);
+
         for (i = 0; i < 5; i++) { // Send five pieces of decay per seed planted
             Client.sendDecay();
         }
-        //            }
-
-        //}
     },
 
-    plantSeed: function (seedX) {
-        game.add.image(seedX, game.height - 15, 'nutrient');
+    groundCheck: function (seed, ground) {
+        if (groundChecked == false) {
+            if (game.physics.arcade.overlap(this.seed, this.trash)) {
+                seed.frame = 2;
+            } else {
+                seed.frame = 1; // Give it a healthy appearance
+                this.allTrees.unshift(seed); // Add it to the beginning of the array
+                growChecked = false; // The growth needs to be checked.
+                this.growCheck(); // Call for said growth check.
+
+                Client.sendSeed(); // Ask the server to plant a seed
+                
+                console.log(game.zIndex); // undefined
+            }
+
+            seed.body.checkCollision.down = false;
+            seed.body.checkCollision.up = false;
+            seed.body.checkCollision.left = false;
+            seed.body.checkCollision.right = false;
+
+            groundChecked = true;
+        }
+    },
+
+    growCheck: function () {
+        if (this.allTrees[4]) {
+            this.advanceGrowth(this.allTrees[4]);
+        }
+        if (this.allTrees[9]) {
+            this.advanceGrowth(this.allTrees[9]);
+        }
+        if (this.allTrees[14]) {
+            this.advanceGrowth(this.allTrees[14]);
+        }
+        growChecked = true;
+    },
+
+    advanceGrowth: function (treeToGrow) {
+        if (treeToGrow.frame == 1) {
+            treeToGrow.frame = birdState.getRandomInt(3, 6); // choose 3, 4, 5
+        } else {
+            treeToGrow.frame += 3;
+        }
     },
 
     updateScore: function (bScore) {
         if (birdState.bScoreLabel) {
             birdState.bScoreLabel.setText('trees planted: ' + bScore);
-        }
-    },
-
-    jump: function () {
-        this.birdplayer.body.velocity.y = -350;
-
-        if (this.birdplayer.scale.x == 1) {
-            game.add.tween(this.birdplayer).to({
-                angle: 20
-            }, 100).start();
-        } else if (this.birdplayer.scale.x == -1) {
-            game.add.tween(this.birdplayer).to({
-                angle: -20
-            }, 100).start();
-        }
-        
-        if (appleEaten == true) {
-            this.birdplayer.animations.play('fatfly');
-        } else {
-            this.birdplayer.animations.play('fly');
         }
     },
 
@@ -210,10 +242,7 @@ var birdState = {
         this.platforms.setAll('body.velocity.x', 100);
         this.platforms.setAll('body.friction.x', 1);
 
-        //this.bg.inputEnabled = true; // allow the click/tap event to actually do something
-
-        game.physics.arcade.gravity.y = 500; //world gravity
-
+        game.physics.arcade.gravity.y = 500; // World gravity
     },
 
     makeTrash: function () {
@@ -221,11 +250,11 @@ var birdState = {
         this.trash.enableBody = true;
 
         var trashImg = ['bottle', 'chips', 'can'];
-        
+
         for (i = 0; i < 5; i++) {
             var randomX = Math.floor(Math.random() * 600);
             var selector = birdState.getRandomInt(0, 3);
-            
+
             this.trash.create(randomX, game.height - 5, trashImg[selector]);
         }
 
@@ -273,8 +302,12 @@ var birdState = {
 
                 if (this.birdplayer.body.onFloor() || this.birdplayer.body.touching.down) {
                     this.birdplayer.animations.stop();
-                    this.birdplayer.frame = 1;
-                    
+                    if (appleEaten == true) {
+                        this.birdplayer.frame = 3;
+                    } else {
+                        this.birdplayer.frame = 1;
+                    }
+
                     game.add.tween(this.birdplayer).to({
                         angle: 0
                     }, 100).start();
@@ -283,20 +316,36 @@ var birdState = {
         }
     },
 
+    jump: function () {
+        if (this.birdplayer.scale.x == 1) {
+            game.add.tween(this.birdplayer).to({
+                angle: 20
+            }, 100).start();
+        } else if (this.birdplayer.scale.x == -1) {
+            game.add.tween(this.birdplayer).to({
+                angle: -20
+            }, 100).start();
+        }
+
+        if (appleEaten == true) {
+            this.birdplayer.animations.play('fatfly');
+            this.birdplayer.body.velocity.y = -350;
+        } else {
+            this.birdplayer.animations.play('fly');
+            this.birdplayer.body.velocity.y = -500;
+        }
+    },
+
     debugDrop: function () {
         if (!wasCalledB && this.debugAppleDrop.isDown && appleEaten == false) {
             wasCalledB = true;
-            console.log("wasCalled is now " + wasCalledB);
             this.appleDrop();
         }
     },
 
-
     // ****************** MOBILE FUNCTIONS *****************
     addMobileInputs: function () {
-
         // this.bg.events.onInputDown.add(this.jump, this);
-
     },
 
     orientationChange: function () {

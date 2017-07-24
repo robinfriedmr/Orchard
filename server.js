@@ -141,13 +141,11 @@ io.on('connection', function (socket) {
         });
 
         // Score!
-        socket.on('sendSeed', function (seedX) {
-            console.log("Server has the seed, at " + seedX);
-            socket.emit('plantSeed', seedX); // tell the birdplayer to plant the seed
+        socket.on('sendSeed', function () {
+            console.log("Server has planted the seed.");
             if (playerMap[WORM_GAME] != -1) {
                 socket.to(playerMap[WORM_GAME]).emit('plantRoot'); // tell the worm player to have a new root
             }
-
             httpServer.score++; //increase server score
             console.log("The score is now " + httpServer.score);
             io.emit('updateScore', httpServer.score);

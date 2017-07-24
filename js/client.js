@@ -37,8 +37,8 @@ Client.sendDecay = function () {
     Client.socket.emit('sendDecay');
 };
 
-Client.sendSeed = function (seedX) {
-    Client.socket.emit('sendSeed', seedX);
+Client.sendSeed = function () {
+    Client.socket.emit('sendSeed');
 };
 
 //************FROM SERVER****************
@@ -71,10 +71,6 @@ Client.socket.on('receiveDecay', function () {
     wormState.newDecay();
 });
 
-Client.socket.on('plantSeed', function (seedX) {
-    birdState.plantSeed(seedX);
-});
-
 Client.socket.on('plantRoot', function () {
     wormState.drawRoot(); 
 });
@@ -104,10 +100,6 @@ Client.socket.on('treeNo', function (data) {
 
 Client.socket.on('birdGo', function (data) {
     menuState.startBird(data);
-});
-
-Client.socket.on('plantRoot', function () {
-    wormState.drawRoot();
 });
 
 Client.socket.on('birdNo', function (data) {
