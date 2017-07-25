@@ -20,12 +20,11 @@ var birdState = {
         // Create object for fallingApple.
         this.fallingApple = {};
 
-        // Create an array for allTrees.
-        this.allTrees = [];
-        console.log(this.allTrees.z + " of empty allTrees array");
-
         // Add background. 
         this.createWorld();
+
+        // Create a group for allTrees.
+        this.allTrees = this.add.group();
 
         // Add score label.
         birdState.bScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
@@ -42,8 +41,6 @@ var birdState = {
         this.birdplayer = game.add.sprite(game.width / 2 + 200, game.height / 3, 'bird');
         this.birdplayer.frame = 1;
         this.birdplayer.anchor.setTo(0.5, 0.5);
-        
-        console.log(this.birdplayer.z + " of bird");
 
         // Add animations.
         this.birdplayer.animations.add('fly', [0, 1], 8, true);
@@ -57,8 +54,6 @@ var birdState = {
         this.birdplayer.body.checkCollision.down = false;
 
         this.makeTrash();
-        
-        console.log(this.trash.z + " of trash");
 
         // The arrow keys will only ever affect the game, not the browswer window.
         game.input.keyboard.addKeyCapture(
@@ -82,6 +77,7 @@ var birdState = {
 
             this.addMobileInputs();
         }
+
     },
 
     update: function () {
@@ -165,7 +161,7 @@ var birdState = {
         this.emitter.start(true, 1000, null, 10);
 
         var howhigh = Math.max(0, this.birdplayer.y);
-        this.seed = game.add.sprite(x, howhigh, 'tree');
+        this.seed = this.allTrees.create(x, howhigh, 'tree');
         this.seed.anchor.setTo(0.5, 1);
         this.seed.frame = 0;
 
@@ -179,18 +175,22 @@ var birdState = {
     },
 
     groundCheck: function (seed, ground) {
-        if (groundChecked == false) {
+        if (groundChecked == false) {            
             if (game.physics.arcade.overlap(this.seed, this.trash)) {
                 seed.frame = 2;
+                this.allTrees.children.splice(this.allTrees.children.indexOf(seed), 1);
             } else {
                 seed.frame = 1; // Give it a healthy appearance
-                this.allTrees.unshift(seed); // Add it to the beginning of the array
+                
+                if (this.allTrees.children.indexOf(seed) > 0) {
+                    this.allTrees.children.splice(this.allTrees.children.indexOf(seed), 1);
+                    this.allTrees.children.unshift(seed);
+                } // Move seed to the front of the allTrees.children array.
+
                 growChecked = false; // The growth needs to be checked.
                 this.growCheck(); // Call for said growth check.
 
                 Client.sendSeed(); // Ask the server to plant a seed
-                
-                console.log(game.zIndex); // undefined
             }
 
             seed.body.checkCollision.down = false;
@@ -203,14 +203,14 @@ var birdState = {
     },
 
     growCheck: function () {
-        if (this.allTrees[4]) {
-            this.advanceGrowth(this.allTrees[4]);
+        if (this.allTrees.children[4]) {
+            this.advanceGrowth(this.allTrees.children[4]);
         }
-        if (this.allTrees[9]) {
-            this.advanceGrowth(this.allTrees[9]);
+        if (this.allTrees.children[9]) {
+            this.advanceGrowth(this.allTrees.children[9]);
         }
-        if (this.allTrees[14]) {
-            this.advanceGrowth(this.allTrees[14]);
+        if (this.allTrees.children[14]) {
+            this.advanceGrowth(this.allTrees.children[14]);
         }
         growChecked = true;
     },
@@ -231,7 +231,6 @@ var birdState = {
 
     createWorld: function () {
         this.bg = game.add.image(0, 0, 'birdBG');
-
         this.platforms = this.add.physicsGroup(); // Create physics group for the ground. A physicsGroup has a physics body enabled by default. 
 
         // Create the ground and set properties.
