@@ -23,8 +23,10 @@ var birdState = {
         // Add background. 
         this.createWorld();
 
-        // Create a group for allTrees.
+        // Create a group for allTrees (seeds and alive)
         this.allTrees = this.add.group();
+        // Create a group for growingTrees
+        this.growingTrees = this.add.group();
 
         // Add score label.
         birdState.bScoreLabel = game.add.text(50, 30, 'trees planted: 0', {
@@ -175,42 +177,44 @@ var birdState = {
     },
 
     groundCheck: function (seed, ground) {
-        if (groundChecked == false) {            
+        if (groundChecked == false) {
             if (game.physics.arcade.overlap(this.seed, this.trash)) {
                 seed.frame = 2;
-                this.allTrees.children.splice(this.allTrees.children.indexOf(seed), 1);
+                console.log("Bad seed.");
+                console.log("The length of allTrees is " + this.allTrees.length);
+                console.log("The length of growingTrees is " + this.growingTrees.length);
             } else {
                 seed.frame = 1; // Give it a healthy appearance
-                
-                if (this.allTrees.children.indexOf(seed) > 0) {
-                    this.allTrees.children.splice(this.allTrees.children.indexOf(seed), 1);
-                    this.allTrees.children.unshift(seed);
-                } // Move seed to the front of the allTrees.children array.
+                this.growingTrees.children.unshift(seed); // Move seed to the front of growingTrees array.
+                console.log("Good seed.");
+                console.log("The length of allTrees is " + this.allTrees.length);
+                console.log("The length of growingTrees is " + this.growingTrees.length);
 
                 growChecked = false; // The growth needs to be checked.
                 this.growCheck(); // Call for said growth check.
 
                 Client.sendSeed(); // Ask the server to plant a seed
             }
-
-            seed.body.checkCollision.down = false;
-            seed.body.checkCollision.up = false;
-            seed.body.checkCollision.left = false;
-            seed.body.checkCollision.right = false;
-
-            groundChecked = true;
         }
+
+        seed.body.checkCollision.down = false;
+        seed.body.checkCollision.up = false;
+        seed.body.checkCollision.left = false;
+        seed.body.checkCollision.right = false;
+        seed.body.allowGravity = false;
+
+        groundChecked = true;
     },
 
     growCheck: function () {
-        if (this.allTrees.children[4]) {
-            this.advanceGrowth(this.allTrees.children[4]);
+        if (this.growingTrees.children[4]) {
+            this.advanceGrowth(this.growingTrees.children[4]);
         }
-        if (this.allTrees.children[9]) {
-            this.advanceGrowth(this.allTrees.children[9]);
+        if (this.growingTrees.children[9]) {
+            this.advanceGrowth(this.growingTrees.children[9]);
         }
-        if (this.allTrees.children[14]) {
-            this.advanceGrowth(this.allTrees.children[14]);
+        if (this.growingTrees.children[14]) {
+            this.advanceGrowth(this.growingTrees.children[14]);
         }
         growChecked = true;
     },
