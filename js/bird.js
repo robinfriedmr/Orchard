@@ -51,7 +51,10 @@ var birdState = {
         // Enable physics on the sprites' bodies.
         game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
         this.birdplayer.body.gravity.y = 1000;
-        this.birdplayer.body.setSize(40, 55)
+    
+        this.birdplayer.body.setSize(28, 55, 12, 0); // original setSize works after scaling
+        this.birdplayer.scale.setTo(0.54, 0.54); // SCALING
+        
         this.birdplayer.body.collideWorldBounds = true;
         this.birdplayer.body.checkCollision.down = false;
 
@@ -81,6 +84,14 @@ var birdState = {
         }
 
     },
+
+//    render: function () {
+//        game.debug.body(this.birdplayer);
+//
+//        this.trash.forEach(function (piece) {
+//            game.debug.body(piece);
+//        })
+//    },
 
     update: function () {
         game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
@@ -126,6 +137,7 @@ var birdState = {
         this.fallingApple.anchor.setTo(0.5, 0.5);
         game.physics.arcade.enable(this.fallingApple, Phaser.Physics.ARCADE);
         this.fallingApple.body.setCircle(37.5);
+        this.fallingApple.scale.setTo(0.25); // *** SCALING ***
         this.fallingApple.body.velocity.y = 10;
         this.fallingApple.tint = 0xE60C0C;
     },
@@ -169,7 +181,8 @@ var birdState = {
 
         game.physics.arcade.enable(this.seed, Phaser.Physics.ARCADE);
         this.seed.body.collideWorldBounds = true;
-        this.seed.body.setSize(10, 300, 88, 0);
+        this.seed.body.setSize(20, 300, 85, 0);
+        this.seed.scale.setTo(0.8, 0.8); //formerly 1.2 but that didn't work. 0.8 does.
 
         for (i = 0; i < 5; i++) { // Send five pieces of decay per seed planted
             Client.sendDecay();
@@ -254,7 +267,7 @@ var birdState = {
 
         var trashImg = ['bottle', 'chips', 'can'];
 
-        for (i = 0; i < 5; i++) {
+        for (i = 0; i < 20; i++) {
             var randomX = Math.floor(Math.random() * 600);
             var selector = birdState.getRandomInt(0, 3);
 
@@ -263,6 +276,7 @@ var birdState = {
 
         this.trash.forEach(function (piece) {
             piece.anchor.setTo(0.5, 1);
+            piece.scale.setTo(0.6, 0.6);
 
             piece.body.gravity.y = 5;
             piece.body.moves = true;
@@ -332,10 +346,10 @@ var birdState = {
 
         if (appleEaten == true) {
             this.birdplayer.animations.play('fatfly');
-            this.birdplayer.body.velocity.y = -350;
+            this.birdplayer.body.velocity.y = -250;
         } else {
             this.birdplayer.animations.play('fly');
-            this.birdplayer.body.velocity.y = -500;
+            this.birdplayer.body.velocity.y = -375;
         }
     },
 
