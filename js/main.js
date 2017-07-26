@@ -4,7 +4,10 @@
 var game = new Phaser.Game(
     40 * 15,
     23 * 15,
-    Phaser.AUTO, 'phasergame'
+    Phaser.AUTO, 'phasergame', 
+    null, 
+    false,
+    false // Disable anti-aliasing
 );
 
 // Add all the states
