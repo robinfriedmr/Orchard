@@ -105,11 +105,11 @@ var birdState = {
         this.debugDrop();
 
         // Change angle of bird to encourage flapping.
-        if (this.birdplayer.scale.x == 1) {
+        if (this.birdplayer.scale.x > 0) {
             if (this.birdplayer.angle > -20) {
                 this.birdplayer.angle -= 1;
             }
-        } else if (this.birdplayer.scale.x == -1) {
+        } else if (this.birdplayer.scale.x < 0) {
             if (this.birdplayer.angle < 20) {
                 this.birdplayer.angle += 1;
             }
@@ -299,8 +299,8 @@ var birdState = {
                 this.birdplayer.body.velocity.x = -350;
                 this.jump();
 
-                if (this.birdplayer.scale.x == -1) {
-                    this.birdplayer.scale.x = 1;
+                if (this.birdplayer.scale.x < 0) {
+                    this.birdplayer.scale.x *= -1;
                 }
                 flip = false;
 
@@ -308,8 +308,8 @@ var birdState = {
                 this.birdplayer.body.velocity.x = 350;
                 this.jump();
 
-                if (this.birdplayer.scale.x == 1) {
-                    this.birdplayer.scale.x = -1;
+                if (this.birdplayer.scale.x > 0) {
+                    this.birdplayer.scale.x *= -1;
                 }
                 flip = false;
 
@@ -334,11 +334,11 @@ var birdState = {
     },
 
     jump: function () {
-        if (this.birdplayer.scale.x == 1) {
+        if (this.birdplayer.scale.x > 0) {
             game.add.tween(this.birdplayer).to({
                 angle: 20
             }, 100).start();
-        } else if (this.birdplayer.scale.x == -1) {
+        } else if (this.birdplayer.scale.x < 0) {
             game.add.tween(this.birdplayer).to({
                 angle: -20
             }, 100).start();

@@ -5,10 +5,11 @@
 var isPressed = true; // this is a variable temporarily needed to get the overlap with goal function tested. 
 
 var worm, decay, nutrient, holding,
-    speed, speedModifier,
+    speed, boost, rootpain,
     updateDelayW, direction, new_direction;
 
 const SQUARESIZE = 15;
+const BASESPEED = 10;
 
 var wormState = {
 
@@ -28,6 +29,13 @@ var wormState = {
             right: game.input.keyboard.addKey(Phaser.Keyboard.D)
         };
 
+        // The arrow keys and spacebar will only ever affect the game, not the browswer window.
+        game.input.keyboard.addKeyCapture(
+            [Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,
+             Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT,
+             Phaser.Keyboard.SPACEBAR]
+        );
+
         // Define roots
         this.roots = [];
 
@@ -38,8 +46,11 @@ var wormState = {
         decay = []; // An array for the decay.
         nutrient = []; // An array for deposited nutrients.
         holding = 0; // A counter for how much the worm is carrying at a given time. 
+
         speed = 0; // Game speed.
-        speedModifier = 0; // Number of times collided with self or wall.        
+        boost = 0; // NEW SPEED MODIFIER
+        rootpain = 0; // NEW SPEED MODIFIER
+
         updateDelayW = 0; // A variable for control over update rates.
         direction = 'right'; // The direction of our worm.
         new_direction = null; // A buffer to store the new direction into.
@@ -60,7 +71,7 @@ var wormState = {
         this.wScoreLabel.anchor.setTo(1, 1);
 
         this.devoured = 0;
-        decayDevoured = game.add.text(game.width / 2, game.height - 10, 'Held Decay: ' + this.devoured, {
+        decayDevoured = game.add.text(game.width / 2, game.height - 10, 'Nutrients Held: ' + this.devoured, {
             font: '16px Arial',
             fill: '#ffffff'
         });
@@ -78,15 +89,9 @@ var wormState = {
         game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
 
         // Genereate the first three pieces of decay.
-        for (i = 0; i < 3; i++) {
+        for (i = 0; i < 5; i++) {
             this.newDecay();
         }
-
-        // The arrow keys and spacebar will only ever affect the game, not the browswer window.
-        game.input.keyboard.addKeyCapture(
-            [Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,
-             Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT,
-             Phaser.Keyboard.SPACEBAR]);
 
         if (!game.device.desktop) {
             // Create an empty label to write the error message if needed
@@ -115,9 +120,8 @@ var wormState = {
         // Is the worm's end over the goal? 
         game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
 
-        var firstCell = worm[worm.length - 1];
-
         // Use the arrow keys to determine the worm's new direction, while preventing illegal directions.
+        var firstCell = worm[worm.length - 1];
         if ((this.cursor.right.isDown || this.wasd.right.isDown) && direction != 'left' && firstCell.x < (game.width - SQUARESIZE)) {
             new_direction = 'right';
         } else if ((this.cursor.left.isDown || this.wasd.left.isDown) && direction != 'right' && firstCell.x > SQUARESIZE) {
@@ -128,12 +132,12 @@ var wormState = {
             new_direction = 'down';
         }
 
-        speedModifier = Math.min(10, speedModifier); // Set the collision counter to at most 10.
-        speed = Math.min(10, speedModifier); // Modulate speed based on the collision counter.
+        rootpain = Math.min(10, rootpain); // Set rootpain to at most 10.
+        boost = Math.min(9, boost); // Set boost to at most 9
 
-        // Run this code every 10 (to 20) runs through "update," unless sped up.
+        // Run this code every (speed calculation) runs through "update."
         updateDelayW++;
-        if (updateDelayW % (10 + speed) == 0) {
+        if (updateDelayW % (BASESPEED + rootpain - boost) == 0) {
             // Worm movement
             //firstCell is now defined above the new-direction code.
             lastCell = worm.shift(),
@@ -152,6 +156,10 @@ var wormState = {
                 new_direction = null;
             }
             this.wormMovement(lastCell, firstCell);
+
+            if (rootpain > 0) {
+                rootpain--;
+            }
         }
     },
 
@@ -177,20 +185,16 @@ var wormState = {
     wallCollision: function (head) {
         if (direction == 'right' && head.x == (game.width - SQUARESIZE)) {
             new_direction = 'up';
-            speedModifier++;
-            console.log(speedModifier);
+            rootpain = 9;
         } else if (direction == 'left' && head.x == 0) {
             new_direction = 'down';
-            speedModifier++;
-            console.log(speedModifier);
+            rootpain = 9;
         } else if (direction == 'up' && head.y == 0) {
             new_direction = 'left';
-            speedModifier++;
-            console.log(speedModifier);
+            rootpain = 9;
         } else if (direction == 'down' && head.y == (game.height - SQUARESIZE)) {
             new_direction = 'right';
-            speedModifier++;
-            console.log(speedModifier);
+            rootpain = 9;
         }
     },
 
@@ -198,8 +202,7 @@ var wormState = {
         // Check if the head of the worm overlaps with any part of the worm.
         for (var i = 0; i < worm.length - 1; i++) {
             if (head.x == worm[i].x && head.y == worm[i].y) {
-                speedModifier++;
-                console.log(speedModifier);
+                rootpain++;
             }
         }
     },
@@ -208,8 +211,7 @@ var wormState = {
         // Check if the head of the worm overlaps with any roots.
         for (var i = 0; i < this.roots.length - 1; i++) {
             if (head.x == this.roots[i].x && head.y == this.roots[i].y) {
-                speedModifier++;
-                console.log(speedModifier);
+                rootpain += 2;
             }
         }
     },
@@ -224,26 +226,27 @@ var wormState = {
     },
 
     decayCollision: function (firstCell) {
-        if (holding < 5) {
-            for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching
-                for (var j = 0; j < decay.length; j++) { // any of the pieces of decay
-                    if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) {
+        for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching
+            for (var j = 0; j < decay.length; j++) { // any of the pieces of decay
+                if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) {
 
-                        // Destroy the old decay.
-                        decay[j].destroy();
-                        // Remove from array (1 element at index j)
-                        decay.splice(j, 1);
+                    // Destroy the old decay.
+                    decay[j].destroy();
+                    // Remove from array (1 element at index j)
+                    decay.splice(j, 1);
 
-                        holding++; // How many nutrients are we holding?
-                        console.log("Holding " + holding);
+                    holding++; // How many nutrients are we holding?
+                    console.log("Holding: " + holding);
+                    this.updateBelly(holding); // Increase the devoured variable by 1.
 
-                        // Reduce the counter / speed up the worm.
-                        if (speedModifier > -8) {
-                            speedModifier -= 2;
-                            console.log(speedModifier);
+                    if (holding % 5 == 0) { // Every 5 pieces held...
+                        if (boost < 8) {
+                            boost += 2; // ...speed up the worm.
+                            console.log(boost);
+                        } else if (boost = 8) {
+                            boost++;
+                            console.log(boost);
                         }
-                        // Increase the devoured variable by 1
-                        this.updateBelly(holding);
                     }
                 }
             }
@@ -266,7 +269,16 @@ var wormState = {
                 this.delivered++;
                 this.updateDelivered(this.delivered);
 
-                speedModifier += 2; // Slow down for every nutrient depositied
+                if (holding % 5 == 0) { // Every 5 pieces held...
+                    if (boost > 1) {
+                        boost -= 2; // ...speed up the worm.
+                        console.log(boost);
+                    } else if (boost = 1) {
+                        boost--;
+                        console.log(boost);
+                    }
+                }
+
                 isPressed = false; // Set isPressed to false. This block can only run again when it's true.
             }
         }
@@ -290,15 +302,6 @@ var wormState = {
     createWorld: function () {
         game.add.image(0, 0, 'wormBG');
         this.drawRoot();
-
-        //        this.map = game.add.tilemap('dmap');
-        //        this.map.addTilesetImage('tiles');
-        //        this.layer = this.map.createLayer('Tile Layer 1');
-
-        //        this.layer.resizeWorld();
-
-        //        // Enable collisions for the XX'th tilset elements (dark worm, roots, worms)
-        //        this.map.setCollision();
     },
 
     drawRoot: function () {
@@ -457,7 +460,7 @@ var wormState = {
     },
 
     updateBelly: function (holding) {
-        decayDevoured.setText('Held Decay: ' + holding);
+        decayDevoured.setText('Nutrients Held: ' + holding);
     },
 
     updateDelivered: function (delivered) {
