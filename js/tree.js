@@ -25,7 +25,7 @@ var treeState = {
 
         // Add background
         this.createWorld();
-        
+
         // Add sprites to the game
         this.growingapple = game.add.sprite(game.width / 2, game.height / 2, 'growingapple');
         this.growingapple.anchor.setTo(0.5, 0.5);
@@ -213,9 +213,14 @@ var treeState = {
         game.add.image(0, 0, 'treeBG');
     },
 
-    // ****************** MOBILE FUNCTIONS *****************
-    addMobileInputs: function () {
+    updateScore: function (tScore) {
+        if (treeState.tScoreLabel) {
+            treeState.tScoreLabel.setText('trees planted: ' + tScore);
+        }
     },
+
+    // ****************** MOBILE FUNCTIONS *****************
+    addMobileInputs: function () {},
 
     orientationChange: function () {
         // If the game is in portrait (wrong orientation)

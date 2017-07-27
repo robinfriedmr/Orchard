@@ -1,8 +1,8 @@
 // Worm 7/21/2017 7:57
 
-// This game is an amalgamation of original code, code inspired by the Discover Phaser tutorial, and Danny Markov's "Making Your First HTML5 Game With Phaser" tutorial on tutorialzine.com.
+// This game is an amalgamation of original work, code inspired by the Discover Phaser tutorial, and the tutorial "Making Your First HTML5 Game With Phaser" by Danny Markov on tutorialzine.com.
 
-var isPressed = true; // this is a variable temporarily needed to get the overlap with goal function tested. 
+var isPressed = true;
 
 var worm, decay, nutrient, holding,
     speed, boost, rootpain,
@@ -42,18 +42,18 @@ var wormState = {
         // Add map 
         this.createWorld();
 
-        worm = []; // This will work as a stack, containing the parts of our worm
+        worm = []; // This is a stack that contains the parts of the worm.
         decay = []; // An array for the decay.
         nutrient = []; // An array for deposited nutrients.
         holding = 0; // A counter for how much the worm is carrying at a given time. 
 
         speed = 0; // Game speed.
-        boost = 0; // NEW SPEED MODIFIER
-        rootpain = 0; // NEW SPEED MODIFIER
+        boost = 0; // NEW SPEED MODIFIER (fast)
+        rootpain = 0; // NEW SPEED MODIFIER (slow)
 
-        updateDelayW = 0; // A variable for control over update rates.
+        updateDelayW = 0; // A variable updating every frame that controls when the worm moves.
         direction = 'right'; // The direction of our worm.
-        new_direction = null; // A buffer to store the new direction into.
+        new_direction = null; // A buffer to store the new direction.
 
         // Add sprites to the game.
         this.goal = game.add.sprite(game.width / 2, 0, 'goal');
@@ -88,7 +88,7 @@ var wormState = {
         game.physics.arcade.enable(worm, Phaser.Physics.ARCADE);
         game.physics.arcade.enable(this.goal, Phaser.Physics.ARCADE);
 
-        // Genereate the first three pieces of decay.
+        // Genereate the first five pieces of decay.
         for (i = 0; i < 5; i++) {
             this.newDecay();
         }
@@ -117,7 +117,7 @@ var wormState = {
         //            wasCalled = false;
         //        }
 
-        // Is the worm's end over the goal? 
+        // Is the worm's end over the goal? If so, allow nutrient deposit code to run.
         game.physics.arcade.overlap(worm[0], this.goal, this.depositNutrient, null, this);
 
         // Use the arrow keys to determine the worm's new direction, while preventing illegal directions.
@@ -135,7 +135,7 @@ var wormState = {
         rootpain = Math.min(10, rootpain); // Set rootpain to at most 10.
         boost = Math.min(9, boost); // Set boost to at most 9
 
-        // Run this code every (speed calculation) runs through "update."
+        // Run this code every [calculated number of] runs through "update."
         updateDelayW++;
         if (updateDelayW % (BASESPEED + rootpain - boost) == 0) {
             // Worm movement
@@ -183,6 +183,7 @@ var wormState = {
     },
 
     wallCollision: function (head) {
+        // Redirect the perpetually-moving worm if it hits a wall.
         if (direction == 'right' && head.x == (game.width - SQUARESIZE)) {
             new_direction = 'up';
             rootpain = 9;
@@ -226,18 +227,17 @@ var wormState = {
     },
 
     decayCollision: function (firstCell) {
-        for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching
-            for (var j = 0; j < decay.length; j++) { // any of the pieces of decay
+        for (var i = 0; i < worm.length; i++) { // If any part of the worm is touching...
+            for (var j = 0; j < decay.length; j++) { // ...any of the pieces of decay
                 if (worm[i].x == decay[j].x && worm[i].y == decay[j].y) {
 
-                    // Destroy the old decay.
+                    // Destroy the old decay and remove from array.
                     decay[j].destroy();
-                    // Remove from array (1 element at index j)
                     decay.splice(j, 1);
 
                     holding++; // How many nutrients are we holding?
                     console.log("Holding: " + holding);
-                    this.updateBelly(holding); // Increase the devoured variable by 1.
+                    this.updateBelly(holding); // Increase nutrients held by 1.
 
                     if (holding % 5 == 0) { // Every 5 pieces held...
                         if (boost < 8) {
@@ -343,7 +343,8 @@ var wormState = {
             y: 210
         }; // *************************************
 
-        var whichSide = birdState.getRandomInt(0, 10); // Choose where to spawn the root.
+        // Choose where to spawn the root.
+        var whichSide = birdState.getRandomInt(0, 10); 
         if (whichSide <= 1) { // 20% chance to spawn on the left
             here = 'left';
         } else if (whichSide >= 8) { // 20% chance to spawn on the right
@@ -351,7 +352,6 @@ var wormState = {
         } else { // 60% chance to spawn from the top
             here = 'top';
         }
-
         var whichSpot = Math.random();
 
         switch (here) { // Once the side has been decided on, go to that side and...
@@ -369,8 +369,9 @@ var wormState = {
                 // Place the base accordingly.
                 this.roots[this.roots.length] = game.add.sprite(rootX, rootY, 'root');
 
-                var prob = 0.15; // The probability of turning left or right starts at 15%.                
+                var prob = 0.15; // The probability of turning left or right starts at 15%.
 
+                // Generate the rest of the root based on probability.
                 for (i = 0; i < 10; i++) {
                     if (Math.random() < prob) {
                         rootY += SQUARESIZE;
@@ -453,7 +454,7 @@ var wormState = {
         }
     },
 
-    updatewScore: function (wScore) { // This is the "trees planted" score.
+    updatewScore: function (wScore) { // This is the "Trees Planted" score.
         if (this.wScoreLabel) {
             this.wScoreLabel.setText('Trees Planted: ' + wScore);
         }

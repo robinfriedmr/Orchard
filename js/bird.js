@@ -4,6 +4,7 @@ var groundChecked = true;
 var growChecked = true;
 
 var flip = true;
+const INITCREATE = 20;
 
 var trashArray = [];
 
@@ -51,10 +52,10 @@ var birdState = {
         // Enable physics on the sprites' bodies.
         game.physics.arcade.enable(this.birdplayer, Phaser.Physics.ARCADE);
         this.birdplayer.body.gravity.y = 1000;
-    
-        this.birdplayer.body.setSize(28, 55, 12, 0); // original setSize works after scaling
+
+        this.birdplayer.body.setSize(28, 40, 12, 15); // original setSize works after scaling
         this.birdplayer.scale.setTo(0.54, 0.54); // SCALING
-        
+
         this.birdplayer.body.collideWorldBounds = true;
         this.birdplayer.body.checkCollision.down = false;
 
@@ -83,15 +84,17 @@ var birdState = {
             this.addMobileInputs();
         }
 
+        this.delay = 4000;
+
     },
 
-//    render: function () {
-//        game.debug.body(this.birdplayer);
-//
-//        this.trash.forEach(function (piece) {
-//            game.debug.body(piece);
-//        })
-//    },
+//        render: function () {
+//            game.debug.body(this.birdplayer);
+//    
+//            this.trash.forEach(function (piece) {
+//                game.debug.body(piece);
+//            })
+//        },
 
     update: function () {
         game.physics.arcade.overlap(this.birdplayer, this.fallingApple, this.eatApple, null, this);
@@ -124,6 +127,13 @@ var birdState = {
 
         this.propagate();
         this.movePlayer();
+
+        // Adding Trash
+        if (this.nextTrash < game.time.now) {
+            console.log("Adding trash in update");
+            this.addTrash();
+            this.nextTrash = game.time.now + this.delay // delay changes as score updates
+        }
     },
 
     destroyFallenApple: function () {
@@ -244,6 +254,12 @@ var birdState = {
         if (birdState.bScoreLabel) {
             birdState.bScoreLabel.setText('trees planted: ' + bScore);
         }
+
+        const START = 2000,
+            END = 250,
+            SCORE = 20;
+        this.delay = Math.max(start - (start - end) * bScore / SCORE, end);
+
     },
 
     createWorld: function () {
@@ -267,25 +283,63 @@ var birdState = {
 
         var trashImg = ['bottle', 'chips', 'can'];
 
-        for (i = 0; i < 20; i++) {
+        for (i = 0; i < INITCREATE; i++) {
             var randomX = Math.floor(Math.random() * 600);
             var selector = birdState.getRandomInt(0, 3);
 
-            this.trash.create(randomX, game.height - 5, trashImg[selector]);
+            this.trash.create(randomX, 100, trashImg[selector]);
         }
 
         this.trash.forEach(function (piece) {
+            var randomX = birdState.getRandomInt(-200, 800);
+            var randomV = birdState.getRandomInt(-200, 200);
+            
+            piece.reset(randomX, game.height - 15);
             piece.anchor.setTo(0.5, 1);
+            piece.body.velocity.setTo(randomV, -50);
+
             piece.scale.setTo(0.6, 0.6);
-
             piece.body.gravity.y = 5;
-            piece.body.moves = true;
-            piece.body.velocity.setTo(100, 100);
-
-            piece.body.collideWorldBounds = true;
             piece.body.bounce.set(0.75);
-            piece.body.drag.x = 300;
+            piece.body.drag.x = 250;
+
+            piece.body.checkCollision.up = false;
+            piece.body.collideWorldBounds = false;
+            piece.checkWorldBounds = true;
+            piece.outOfBoundsKill = true;
+
+            piece.alive = true;
         });
+
+        console.log(this.trash.children[0]);
+
+        this.nextTrash = 0;
+    },
+
+    addTrash: function () {
+        var trash = this.trash.getFirstDead();
+        if (!trash) {
+            return
+        }
+
+        trash.anchor.setTo(0.5, 0.5);
+        trash.reset(game.width / 2, game.height - 5);
+        
+        var leftright = birdState.getRandomInt(-500, 500);
+        console.log(leftright);
+        trash.body.velocity.setTo(leftright, -420);
+        trash.body.angularVelocity = 10 * (trash.body.velocity.x + trash.body.velocity.y);
+        trash.body.angularDrag = 100;
+
+        trash.scale.setTo(0.6, 0.6);
+        trash.body.gravity.y = 5;
+        trash.body.bounce.set(0.75);
+        trash.body.drag.x = 250;
+
+        trash.body.checkCollision.up = false;
+        trash.body.collideWorldBounds = false;
+        trash.checkWorldBounds = true;
+        trash.outOfBoundsKill = true;
     },
 
     movePlayer: function () {
