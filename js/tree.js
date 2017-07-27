@@ -1,9 +1,9 @@
-var nutrientNo = 0; // Create global variable 'nutrientNo' to represent the number of nutrient ingredients present.
+var nutrientNo = 0; // Number of nutrient ingredients present.
 var CO2No = 0; // Number of CO2 ingredients present.
 
 var rand1 = -1;
 var rand2 = -1;
-//600
+
 var originalspeed = 400;
 var speed = originalspeed;
 
@@ -23,15 +23,9 @@ var treeState = {
             this.addMobileInputs();
         }
 
-        // Arrow and WASD keys
-        this.cursor = game.input.keyboard.createCursorKeys();
-        this.wasd = {
-            Left: game.input.keyboard.addKey(Phaser.Keyboard.A),
-            Right: game.input.keyboard.addKey(Phaser.Keyboard.D),
-        };
-
-        // Add background and map (eventually) 
+        // Add background
         this.createWorld();
+        
         // Add sprites to the game
         this.growingapple = game.add.sprite(game.width / 2, game.height / 2, 'growingapple');
         this.growingapple.anchor.setTo(0.5, 0.5);
@@ -64,7 +58,6 @@ var treeState = {
         this.nImage.inputEnabled = true;
         this.nImage.events.onInputDown.add(this.activateNutrientAmmo, this);
 
-
         this.CImage = game.add.image(40, 290, 'CO2');
         this.CImage.scale.setTo(1.5, 1.5);
         this.CImage.inputEnabled = true;
@@ -83,12 +76,6 @@ var treeState = {
         this.bulletSelectBox.anchor.setTo(0.5, 0.5);
         this.bulletSelectBox.scale.setTo(1, .4);
 
-        // The arrow keys will only ever affect the game, not the browswer window.
-        game.input.keyboard.addKeyCapture(
-            [Phaser.Keyboard.UP, Phaser.Keyboard.DOWN,
-             Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT,
-             Phaser.Keyboard.SPACEBAR]);
-
         if (!game.device.desktop) {
             // Create an empty label to write the error message if needed
             this.rotateLabel = game.add.text(game.width / 2, game.height / 2, '', {
@@ -104,21 +91,9 @@ var treeState = {
         }
 
         game.time.events.loop(Phaser.Timer.SECOND, this.growingappleProperties, this);
-
     },
 
     update: function () {
-        // Collisions should always go at the top of the Update function.
-        game.physics.arcade.overlap(this.nutrientIng, this.growingapple, this.addNutrientIng, null, this);
-        game.physics.arcade.overlap(this.CO2Ing, this.growingapple, this.addCO2Ing, null, this);
-
-        if (this.wasd.Right.isDown) {
-            speed = speed + 1;
-        }
-        if (this.wasd.Left.isDown) {
-            speed = speed - 1;
-        }
-
         if (rand1 >= .66) {
             this.growingapple.body.acceleration.x = speed;
         } else if (rand1 <= .33) {
@@ -137,8 +112,6 @@ var treeState = {
 
         this.growingapple.body.maxVelocity.x = speed;
         this.growingapple.body.maxVelocity.y = speed;
-
-
     },
 
     growingappleProperties: function () {
@@ -146,11 +119,8 @@ var treeState = {
         rand2 = Math.random();
     },
 
-    clearApple: function () {},
-
     speedUp: function () {
         if (flip && C02ammoOn) {
-            console.log("hit with CO2Ammo");
             hits++;
             if (hits == 1) {
                 this.growingapple.tint = 0xE6B70C;
@@ -164,6 +134,7 @@ var treeState = {
                 this.growingapple.tint = 0x17E60C;
                 speed = originalspeed;
                 this.appleGet(this.growingapple.x, this.growingapple.y);
+                game.camera.shake(0.01, 200);
                 localScore++;
                 treeState.localScoreLabel.setText("Apples Created: " + localScore);
                 Client.sendApple();
@@ -173,7 +144,6 @@ var treeState = {
         }
 
         if (flip && nutrientammoOn && nutrientNo > 0) {
-            console.log("hit with nutrientAmmo");
             this.appleGet(this.growingapple.x, this.growingapple.y);
             localScore++;
             treeState.localScoreLabel.setText("Apples Created: " + localScore);
@@ -220,7 +190,6 @@ var treeState = {
     nutrientSupply: function () {
         nutrientNo++;
         nutrientNoText.text = nutrientNo.toString();
-        console.log("nutrientNo is " + nutrientNo);
     },
 
     activateNutrientAmmo: function () {
@@ -229,7 +198,6 @@ var treeState = {
             this.bulletSelectBox.y = 250;
             nutrientammoOn = true;
             C02ammoOn = false;
-            console.log("nutrientAmmoActive");
         }
     },
 
@@ -238,7 +206,6 @@ var treeState = {
         this.bulletSelectBox.y = 300;
         nutrientammoOn = false;
         C02ammoOn = true;
-        console.log("C02AmmoActive");
     },
 
 
@@ -246,58 +213,8 @@ var treeState = {
         game.add.image(0, 0, 'treeBG');
     },
 
-    updateScore: function (tScore) {
-        if (treeState.tScoreLabel) {
-            treeState.tScoreLabel.setText('trees planted: ' + tScore);
-        }
-    },
-
     // ****************** MOBILE FUNCTIONS *****************
     addMobileInputs: function () {
-        //        // Add the jump button
-        //        var jumpButton = game.add.sprite(350, 240, 'jumpButton');
-        //        jumpButton.inputEnabled = true;
-        //        jumpButton.alpha = 0.5;
-        //        // Call 'jumpPlayer' when the 'jumpButton' is pressed
-        //        jumpButton.events.onInputDown.add(this.jumpPlayer, this);
-
-        this.moveLeft = false;
-        this.moveRight = false;
-
-        // Add the move left button
-        var leftButton = game.add.sprite(50, 240, 'leftButton');
-        leftButton.inputEnabled = true;
-        leftButton.alpha = 0.5;
-        // If the curser is Over or Down on this sprite, set moveLeft to true. 
-        leftButton.events.onInputOver.add(this.setLeftTrue, this);
-        leftButton.events.onInputOut.add(this.setLeftFalse, this);
-        leftButton.events.onInputDown.add(this.setLeftTrue, this);
-        leftButton.events.onInputUp.add(this.setLeftFalse, this);
-
-
-        // Add the move right button
-        var rightButton = game.add.sprite(130, 240, 'rightButton');
-        rightButton.inputEnabled = true;
-        rightButton.alpha = 0.5;
-        rightButton.events.onInputOver.add(this.setRightTrue, this);
-        rightButton.events.onInputOut.add(this.setRightFalse, this);
-        rightButton.events.onInputDown.add(this.setRightTrue, this);
-        rightButton.events.onInputUp.add(this.setRightFalse, this);
-
-    },
-
-    // This set of functions relates to the mobile input buttons.
-    setLeftTrue: function () {
-        this.moveLeft = true;
-    },
-    setLeftFalse: function () {
-        this.moveLeft = false;
-    },
-    setRightTrue: function () {
-        this.moveRight = true;
-    },
-    setRightFalse: function () {
-        this.moveRight = false;
     },
 
     orientationChange: function () {
@@ -315,7 +232,7 @@ var treeState = {
         }
     },
 
-    // **************UNNEEDED BUT POSSIBLY USEFUL
+    // ************** UNNEEDED BUT POSSIBLY USEFUL *********
 
     //    contains: function (a, ing) { // Checks whether an array "a" has an object "ing".
     //        for (var i = 0; i < a.length; i++) {
